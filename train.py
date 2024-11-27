@@ -18,10 +18,10 @@ parser = argparse.ArgumentParser(description='PyTorch CosFace')
 parser.add_argument('--root_path', type=str, default='', help='path to root path of images')
 parser.add_argument('--database', type=str, default='WebFace', help='Which Database for train. (WebFace, VggFace2)')
 parser.add_argument('--train_list', type=str, default=None, help='path to training list')
-parser.add_argument('--batch_size', type=int, default=512, help='input batch size for training (default: 512)')
+parser.add_argument('--batch_size', type=int, default=256, help='input batch size for training (default: 512)')
 parser.add_argument('--is_gray', action='store_true', help='Transform input image to gray')
-# parser.add_argument('--network', type=str, default='sphere20', help='Which network for train.')
 parser.add_argument('--network', type=str, default='mobilenet', help='Which network for train.')
+# parser.add_argument('--network', type=str, default='mobilenet', help='Which network for train.')
 parser.add_argument('--num_class', type=int, default=None, help='number of people (class)')
 parser.add_argument('--classifier_type', type=str, default='ARC', help='Which classifier for train.')
 parser.add_argument('--epochs', type=int, default=30, help='number of epochs to train (default: 30)')
@@ -40,7 +40,7 @@ device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda e
 if args.database == 'WebFace':
     args.train_list = 'data/train/webface_train_ann.txt'
     args.num_class = 10572
-    args.step_size = [16000, 24000]
+    args.step_size = [10, 20]
 elif args.database == 'VggFace2':
     args.train_list = '/home/wangyf/dataset/VGG-Face2/VGG-Face2-112X96.txt'
     args.num_class = 8069
@@ -117,7 +117,7 @@ def main():
     # Training loop
     for epoch in range(1, args.epochs + 1):
         train(train_loader, model, classifier, criterion, optimizer, epoch)
-        save_path = os.path.join(args.save_path, f'CosFace_{epoch}_checkpoint.pth')
+        save_path = os.path.join(args.save_path, f'{args.network}_{epoch}_checkpoint.pth')
         torch.save(model.state_dict(), save_path)
         scheduler.step()
 

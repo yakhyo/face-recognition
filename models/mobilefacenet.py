@@ -141,3 +141,7 @@ def get_mbf(fp16, num_features, blocks=(1, 4, 6, 2), scale=2):
 
 def get_mbf_large(fp16, num_features, blocks=(2, 8, 12, 4), scale=4):
     return MobileFaceNet(fp16, num_features, blocks, scale=scale)
+
+if __name__ == "__main__":
+    model = get_mbf(False, 512)
+    print(sum(p.numel() for p in model.parameters() if p.requires_grad))

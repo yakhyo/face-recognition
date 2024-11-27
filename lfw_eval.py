@@ -1,15 +1,11 @@
-from PIL import Image
 import numpy as np
+from PIL import Image
+from models import mobilefacenet
+from models.sphereface import sphere20, sphere36, sphere64
 
-from torchvision.transforms import functional as F
-import torchvision.transforms as transforms
 import torch
-from torch.autograd import Variable
-import torch.backends.cudnn as cudnn
-
-cudnn.benchmark = True
-
-from models import net
+from torchvision.transforms import functional as F
+from torchvision import transforms
 
 
 def extractDeepFeature(img, model, is_gray):
@@ -21,6 +17,7 @@ def extractDeepFeature(img, model, is_gray):
         ])
     else:
         transform = transforms.Compose([
+            transforms.Resize((112, 112)),
             transforms.ToTensor(),  # range [0, 255] -> [0.0,1.0]
             transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))  # range [0.0, 1.0] -> [-1.0,1.0]
         ])
@@ -34,7 +31,8 @@ def KFold(n=6000, n_folds=10):
     folds = []
     base = list(range(n))
     for i in range(n_folds):
-        test = base[i * n / n_folds:(i + 1) * n / n_folds]
+        # test = base[i * n / n_folds:(i + 1) * n / n_folds]
+        test = base[i * n // n_folds:(i + 1) * n // n_folds]
         train = list(set(base) - set(test))
         folds.append([train, test])
     return folds
@@ -67,8 +65,8 @@ def eval(model, model_path=None, is_gray=False):
     predicts = []
     model.load_state_dict(torch.load(model_path))
     model.eval()
-    root = 'data/test/lfw'
-    with open('data/test/pairs.txt') as f:
+    root = 'data/test/LFW/lfw_aligned_112x112/'
+    with open('data/test/LFW/pairs.txt') as f:
         pairs_lines = f.readlines()[1:]
 
     with torch.no_grad():
@@ -87,9 +85,9 @@ def eval(model, model_path=None, is_gray=False):
                 raise ValueError("WRONG LINE IN 'pairs.txt! ")
 
             with open(root + name1, 'rb') as f:
-                img1 =  Image.open(f).convert('RGB')
+                img1 = Image.open(f).convert('RGB')
             with open(root + name2, 'rb') as f:
-                img2 =  Image.open(f).convert('RGB')
+                img2 = Image.open(f).convert('RGB')
             f1 = extractDeepFeature(img1, model, is_gray)
             f2 = extractDeepFeature(img2, model, is_gray)
 
@@ -100,7 +98,7 @@ def eval(model, model_path=None, is_gray=False):
     thd = []
     folds = KFold(n=6000, n_folds=10)
     thresholds = np.arange(-1.0, 1.0, 0.005)
-    predicts = np.array(map(lambda line: line.strip('\n').split(), predicts))
+    predicts = np.array(list(map(lambda line: line.strip('\n').split(), predicts)))
     for idx, (train, test) in enumerate(folds):
         best_thresh = find_best_threshold(thresholds, predicts[train])
         accuracy.append(eval_acc(best_thresh, predicts[test]))
@@ -111,5 +109,6 @@ def eval(model, model_path=None, is_gray=False):
 
 
 if __name__ == '__main__':
-    _, result = eval(net.sphere().to('cuda'), model_path='checkpoint/CosFace_24_checkpoint.pth')
+    # _, result = eval(net.SphereNet(type=64).to('cuda'), model_path='checkpoint/sphere64_22_checkpoint.pth')
+    _, result = eval(mobilefacenet.get_mbf(False, 512).to('cuda'), model_path='checkpoint/mobilenet_4_checkpoint.pth')
     np.savetxt("result.txt", result, '%s')

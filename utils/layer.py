@@ -87,36 +87,40 @@ class AngleLinear(nn.Module):
         return f'{self.__class__.__name__}(in_features={self.in_features}, out_features={self.out_features}, m={self.m})'
 
 
-class ArcFace(Module):
-    """Implementation for "ArcFace: Additive Angular Margin Loss for Deep Face Recognition"
-    """
-
-    def __init__(self, feat_dim, num_class, margin_arc=0.35, margin_am=0.0, scale=32):
-        super(ArcFace, self).__init__()
-        self.weight = Parameter(torch.Tensor(feat_dim, num_class))
-        self.weight.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)
-        self.margin_arc = margin_arc
-        self.margin_am = margin_am
+class ArcFace(nn.Module):
+    def __init__(self, in_features, out_features, m_arc=0.50, m_am=0.0, scale=64.0):
+        super().__init__()
+        self.m_arc = m_arc
+        self.m_am = m_am
         self.scale = scale
-        self.cos_margin = math.cos(margin_arc)
-        self.sin_margin = math.sin(margin_arc)
-        self.min_cos_theta = math.cos(math.pi - margin_arc)
 
-    def forward(self, feats, labels):
+        self.weight = Parameter(torch.Tensor(in_features, out_features))
+        self.weight.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)
+
+        self.cos_margin = math.cos(m_arc)
+        self.sin_margin = math.sin(m_arc)
+        self.min_cos_theta = math.cos(math.pi - m_arc)
+
+    def forward(self, embbedings, label):
+        embbedings = F.normalize(embbedings, dim=1)
         kernel_norm = F.normalize(self.weight, dim=0)
-        feats = F.normalize(feats)
-        
-        cos_theta = torch.mm(feats, kernel_norm)
-        cos_theta = cos_theta.clamp(-1, 1)
+
+        cos_theta = torch.mm(embbedings, kernel_norm).clamp(-1, 1)
         sin_theta = torch.sqrt(1.0 - torch.pow(cos_theta, 2))
         cos_theta_m = cos_theta * self.cos_margin - sin_theta * self.sin_margin
-        # 0 <= theta + m <= pi, ==> -m <= theta <= pi-m
-        # because 0<=theta<=pi, so, we just have to keep theta <= pi-m, that is cos_theta >= cos(pi-m)
-        cos_theta_m = torch.where(cos_theta > self.min_cos_theta, cos_theta_m, cos_theta-self.margin_am)
+
+        # torch.where doesn't support fp16 input
+        is_half = cos_theta.dtype == torch.float16
+
+        cos_theta_m = torch.where(cos_theta > self.min_cos_theta, cos_theta_m, cos_theta.float() - self.m_am)
+        cos_theta_m = cos_theta_m.half() if is_half else cos_theta_m
+
         index = torch.zeros_like(cos_theta)
-        index.scatter_(1, labels.data.view(-1, 1), 1)
+        index.scatter_(1, label.data.view(-1, 1), 1)
         index = index.byte().bool()
+
         output = cos_theta * 1.0
         output[index] = cos_theta_m[index]
         output *= self.scale
+
         return output
