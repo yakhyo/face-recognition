@@ -1,114 +1,180 @@
+import os
 import numpy as np
 from PIL import Image
-from models import mobilefacenet
-from models.sphereface import sphere20, sphere36, sphere64
+
 
 import torch
-from torchvision.transforms import functional as F
 from torchvision import transforms
 
 
-def extractDeepFeature(img, model, is_gray):
-    if is_gray:
-        transform = transforms.Compose([
-            transforms.Grayscale(),
-            transforms.ToTensor(),  # range [0, 255] -> [0.0,1.0]
-            transforms.Normalize(mean=(0.5,), std=(0.5,))  # range [0.0, 1.0] -> [-1.0,1.0]
-        ])
-    else:
-        transform = transforms.Compose([
-            transforms.Resize((112, 112)),
-            transforms.ToTensor(),  # range [0, 255] -> [0.0,1.0]
-            transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))  # range [0.0, 1.0] -> [-1.0,1.0]
-        ])
-    img, img_ = transform(img), transform(F.hflip(img))
-    img, img_ = img.unsqueeze(0).to('cuda'), img_.unsqueeze(0).to('cuda')
-    ft = torch.cat((model(img), model(img_)), 1)[0].to('cpu')
-    return ft
+from models import mobilefacenet
+from models.sphereface import sphere20, sphere36, sphere64
 
 
-def KFold(n=6000, n_folds=10):
+def extract_deep_features(model, image, device):
+    """
+    Extracts deep features for an image using the model, including both the original and flipped versions.
+
+    Args:
+        model (torch.nn.Module): The pre-trained deep learning model used for feature extraction.
+        image (PIL.Image): The input image to extract features from.
+        device (torch.device): The device (CPU or GPU) on which the computation will be performed.
+
+    Returns:
+        torch.Tensor: Combined feature vector of original and flipped images.
+    """
+
+    # Define transforms
+    original_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+    ])
+
+    flipped_transform = transforms.Compose([
+        transforms.RandomHorizontalFlip(p=1.0),  # Always flip
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+    ])
+
+    # Apply transforms
+    original_image_tensor = original_transform(image).unsqueeze(0).to(device)
+    flipped_image_tensor = flipped_transform(image).unsqueeze(0).to(device)
+
+    # Extract features
+    original_features = model(original_image_tensor)
+    flipped_features = model(flipped_image_tensor)
+
+    # Combine and return features
+    combined_features = torch.cat([original_features, flipped_features], dim=1).squeeze()
+    return combined_features
+
+
+def k_fold_split(n=6000, n_folds=10):
     folds = []
     base = list(range(n))
-    for i in range(n_folds):
-        # test = base[i * n / n_folds:(i + 1) * n / n_folds]
-        test = base[i * n // n_folds:(i + 1) * n // n_folds]
-        train = list(set(base) - set(test))
+    fold_size = n // n_folds
+
+    for idx in range(n_folds):
+        test = base[idx * fold_size:(idx + 1) * fold_size]
+        train = base[:idx * fold_size] + base[(idx + 1) * fold_size:]
         folds.append([train, test])
+
     return folds
 
 
-def eval_acc(threshold, diff):
+def eval_accuracy(predictions, threshold):
     y_true = []
-    y_predict = []
-    for d in diff:
-        same = 1 if float(d[2]) > threshold else 0
-        y_predict.append(same)
-        y_true.append(int(d[3]))
+    y_pred = []
+
+    for _, _, distance, gt in predictions:
+        print(predictions)
+        exit(0)
+        y_true.append(int(gt))
+        pred = 1 if float(distance) > threshold else 0
+        y_pred.append(pred)
+
     y_true = np.array(y_true)
-    y_predict = np.array(y_predict)
-    accuracy = 1.0 * np.count_nonzero(y_true == y_predict) / len(y_true)
+    y_pred = np.array(y_pred)
+
+    accuracy = np.mean(y_true == y_pred)
     return accuracy
 
 
-def find_best_threshold(thresholds, predicts):
-    best_threshold = best_acc = 0
+def find_best_threshold(predictions, thresholds):
+    best_accuracy = 0
+    best_threshold = 0
+
     for threshold in thresholds:
-        accuracy = eval_acc(threshold, predicts)
-        if accuracy >= best_acc:
-            best_acc = accuracy
+        accuracy = eval_accuracy(predictions, threshold)
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
             best_threshold = threshold
+
     return best_threshold
 
 
-def eval(model, model_path=None, is_gray=False):
-    predicts = []
+def eval(model, model_path=None, device=None):
+    """
+    Evaluates a face verification model on the LFW dataset using pairs.txt.
+
+    Args:
+        model (torch.nn.Module): The model to evaluate.
+        model_path (str, optional): Path to pre-trained weights. Defaults to None.
+        device (torch.device, optional): Device for computation (CPU/GPU). Defaults to auto-detection.
+
+    Returns:
+        float: Mean accuracy from K-Fold validation.
+        numpy.ndarray: Predictions with image pairs, similarity scores, and ground truth.
+    """
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Load model
     model.load_state_dict(torch.load(model_path))
-    model.eval()
+    model.to(device).eval()
+
     root = 'data/test/LFW/lfw_aligned_112x112/'
     with open('data/test/LFW/pairs.txt') as f:
-        pairs_lines = f.readlines()[1:]
+        pair_lines = f.readlines()[1:]
 
+    # Extract features and calculate distances
+    predicts = []
     with torch.no_grad():
-        for i in range(6000):
-            p = pairs_lines[i].replace('\n', '').split('\t')
+        for line in pair_lines:
+            parts = line.strip().split('\t')
 
-            if 3 == len(p):
-                sameflag = 1
-                name1 = p[0] + '/' + p[0] + '_' + '{:04}.jpg'.format(int(p[1]))
-                name2 = p[0] + '/' + p[0] + '_' + '{:04}.jpg'.format(int(p[2]))
-            elif 4 == len(p):
-                sameflag = 0
-                name1 = p[0] + '/' + p[0] + '_' + '{:04}.jpg'.format(int(p[1]))
-                name2 = p[2] + '/' + p[2] + '_' + '{:04}.jpg'.format(int(p[3]))
+            if len(parts) == 3:  # Same person
+                is_same = 1
+                name1, index1, index2 = parts[0], parts[1], parts[2]
+                img1_path = os.path.join(root, name1, f"{name1}_{int(index1):04d}.jpg")
+                img2_path = os.path.join(root, name1, f"{name1}_{int(index2):04d}.jpg")
+            elif len(parts) == 4:  # Different persons
+                is_same = 0
+                name1, index1, name2, index2 = parts
+                img1_path = os.path.join(root, name1, f"{name1}_{int(index1):04d}.jpg")
+                img2_path = os.path.join(root, name2, f"{name2}_{int(index2):04d}.jpg")
             else:
-                raise ValueError("WRONG LINE IN 'pairs.txt! ")
+                print(f"Skipping invalid line: {line.strip()}")
+                continue
 
-            with open(root + name1, 'rb') as f:
-                img1 = Image.open(f).convert('RGB')
-            with open(root + name2, 'rb') as f:
-                img2 = Image.open(f).convert('RGB')
-            f1 = extractDeepFeature(img1, model, is_gray)
-            f2 = extractDeepFeature(img2, model, is_gray)
+            # Load and preprocess images
+            img1 = Image.open(os.path.join(root, name1)).convert('RGB')
+            img2 = Image.open(os.path.join(root, name2)).convert('RGB')
 
+            # Extract deep features
+            f1 = extract_deep_features(model, img1, device)
+            f2 = extract_deep_features(model, img2, device)
+
+            # Compute similarity
             distance = f1.dot(f2) / (f1.norm() * f2.norm() + 1e-5)
-            predicts.append('{}\t{}\t{}\t{}\n'.format(name1, name2, distance, sameflag))
+            predicts.append([name1, name2, distance.item(), is_same])
 
-    accuracy = []
-    thd = []
-    folds = KFold(n=6000, n_folds=10)
+    # Convert predictions to numpy array
+    predicts = np.array(predicts)
+
+    # Perform K-Fold validation
     thresholds = np.arange(-1.0, 1.0, 0.005)
-    predicts = np.array(list(map(lambda line: line.strip('\n').split(), predicts)))
-    for idx, (train, test) in enumerate(folds):
-        best_thresh = find_best_threshold(thresholds, predicts[train])
-        accuracy.append(eval_acc(best_thresh, predicts[test]))
-        thd.append(best_thresh)
-    print('LFWACC={:.4f} std={:.4f} thd={:.4f}'.format(np.mean(accuracy), np.std(accuracy), np.mean(thd)))
+    accuracies = []
+    best_thresholds = []
 
-    return np.mean(accuracy), predicts
+    folds = k_fold_split(len(predicts), n_folds=10)
+    for train_indices, test_indices in folds:
+
+        best_threshold = find_best_threshold(predicts[train_indices], thresholds)
+        accuracies.append(eval_accuracy(predicts[test_indices], best_threshold))
+
+        best_thresholds.append(best_threshold)
+
+    # Calculate and display results
+    mean_accuracy = np.mean(accuracies)
+    std_accuracy = np.std(accuracies)
+    mean_threshold = np.mean(best_thresholds)
+
+    print(f'LFW ACC: {mean_accuracy:.4f} | STD: {std_accuracy:.4f} Threshold={mean_threshold:.4f}')
+    return mean_accuracy, predicts
 
 
 if __name__ == '__main__':
     # _, result = eval(net.SphereNet(type=64).to('cuda'), model_path='checkpoint/sphere64_22_checkpoint.pth')
-    _, result = eval(mobilefacenet.get_mbf(False, 512).to('cuda'), model_path='checkpoint/mobilenet_4_checkpoint.pth')
+    _, result = eval(sphere20(512).to('cuda'), model_path='checkpoint/sphere20_30_checkpoint.pth')
     np.savetxt("result.txt", result, '%s')
