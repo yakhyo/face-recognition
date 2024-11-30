@@ -1,17 +1,17 @@
 
-import argparse
 import os
 import time
-import torch
+import argparse
 
-import torch.utils.data
+import torch
+from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from utils import layer
-import lfw_eval
-from utils.dataset import ImageList, ImageFolder
 
+import lfw_eval
+from utils.dataset import ImageFolder
 from utils.helper import AverageMeter, calculate_accuracy
+from utils.metrics import ArcFace, MarginCosineProduct, SphereFace
 
 from models import mobilefacenet
 from models.sphereface import sphere20, sphere36, sphere64
@@ -115,9 +115,9 @@ def parse_arguments():
 # Define a function to select a classification head
 def get_classification_head(classifier, embedding_dim, num_classes):
     classifiers = {
-        'MCP': layer.MarginCosineProduct(embedding_dim, num_classes),
-        'AL': layer.SphereFace(embedding_dim, num_classes),
-        'ARC': layer.ArcFace(embedding_dim, num_classes),
+        'MCP': MarginCosineProduct(embedding_dim, num_classes),
+        'AL': SphereFace(embedding_dim, num_classes),
+        'ARC': ArcFace(embedding_dim, num_classes),
         'L': torch.nn.Linear(embedding_dim, num_classes, bias=False)
     }
 
@@ -246,7 +246,7 @@ def main(params):
 
     # DataLoader
     train_dataset = ImageFolder(root=params.root, transform=train_transform)
-    train_loader = torch.utils.data.DataLoader(
+    train_loader = DataLoader(
         train_dataset,
         batch_size=params.batch_size,
         num_workers=params.workers,
@@ -285,10 +285,6 @@ def main(params):
         torch.save(model.state_dict(), save_path)
         scheduler.step()
         lfw_eval.eval(model, save_path, device)
-
-
-def validate():
-    pass
 
 
 if __name__ == '__main__':
