@@ -67,8 +67,6 @@ def eval_accuracy(predictions, threshold):
     y_pred = []
 
     for _, _, distance, gt in predictions:
-        print(predictions)
-        exit(0)
         y_true.append(int(gt))
         pred = 1 if float(distance) > threshold else 0
         y_pred.append(pred)
@@ -138,8 +136,8 @@ def eval(model, model_path=None, device=None):
                 continue
 
             # Load and preprocess images
-            img1 = Image.open(os.path.join(root, name1)).convert('RGB')
-            img2 = Image.open(os.path.join(root, name2)).convert('RGB')
+            img1 = Image.open(img1_path).convert('RGB')
+            img2 = Image.open(img2_path).convert('RGB')
 
             # Extract deep features
             f1 = extract_deep_features(model, img1, device)
@@ -147,7 +145,7 @@ def eval(model, model_path=None, device=None):
 
             # Compute similarity
             distance = f1.dot(f2) / (f1.norm() * f2.norm() + 1e-5)
-            predicts.append([name1, name2, distance.item(), is_same])
+            predicts.append([img1_path, img2_path, distance.item(), is_same])
 
     # Convert predictions to numpy array
     predicts = np.array(predicts)
@@ -159,11 +157,11 @@ def eval(model, model_path=None, device=None):
 
     folds = k_fold_split(len(predicts), n_folds=10)
     for train_indices, test_indices in folds:
-
         best_threshold = find_best_threshold(predicts[train_indices], thresholds)
-        accuracies.append(eval_accuracy(predicts[test_indices], best_threshold))
-
         best_thresholds.append(best_threshold)
+
+        accuracy = eval_accuracy(predicts[test_indices], best_threshold)
+        accuracies.append(accuracy)
 
     # Calculate and display results
     mean_accuracy = np.mean(accuracies)
@@ -175,6 +173,5 @@ def eval(model, model_path=None, device=None):
 
 
 if __name__ == '__main__':
-    # _, result = eval(net.SphereNet(type=64).to('cuda'), model_path='checkpoint/sphere64_22_checkpoint.pth')
     _, result = eval(sphere20(512).to('cuda'), model_path='checkpoint/sphere20_30_checkpoint.pth')
     np.savetxt("result.txt", result, '%s')

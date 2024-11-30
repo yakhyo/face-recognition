@@ -163,7 +163,15 @@ class SphereNet(nn.Module):
                 else:
                     nn.init.normal_(m.weight, 0, 0.01)
 
-    def _make_layer(self, block, in_channels, out_channels, num_blocks, stride) -> nn.Sequential:
+    def _make_layer(
+        self,
+        block: Type[ResidualBlock],
+        in_channels: int,
+        out_channels: int,
+        num_blocks: int,
+        stride: int
+    ) -> nn.Sequential:
+        
         layers: List[nn.Module] = [
             Conv2dNormActivation(
                 in_channels=in_channels,
@@ -173,7 +181,9 @@ class SphereNet(nn.Module):
                 norm_layer=self._norm_layer
             )
         ]
-        layers += [block(out_channels, self._norm_layer) for _ in range(num_blocks)]
+        for _ in range(0, num_blocks):
+            layers.append(block(out_channels, self._norm_layer))
+
         return nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
