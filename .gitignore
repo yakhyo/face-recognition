@@ -1,8 +1,6 @@
-data/train
-data/test
-data/val
+data/
 
-checkpoint
+weights/
 
 
 # Byte-compiled / optimized / DLL files

@@ -93,8 +93,8 @@ def parse_arguments():
     parser.add_argument(
         '--save-path',
         type=str,
-        default='checkpoint/',
-        help='Path to save model checkpoints. Default: checkpoint/.'
+        default='weights',
+        help='Path to save model checkpoints. Default: `weights`.'
     )
     parser.add_argument(
         '--workers',
@@ -269,6 +269,7 @@ def main(params):
     )
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=params.step_size, gamma=0.1)
 
+    best_accuracy = 0.0
     # Training loop
     for epoch in range(1, params.epochs + 1):
         train_one_epoch(
@@ -281,10 +282,20 @@ def main(params):
             epoch,
             params
         )
-        save_path = os.path.join(params.save_path, f'{params.network}_{epoch}_checkpoint.pth')
-        torch.save(model.state_dict(), save_path)
+        last_save_path = os.path.join(params.save_path, f'{params.network}_last.pth')
+        torch.save(model.state_dict(), last_save_path)
+        
         scheduler.step()
-        lfw_eval.eval(model, save_path, device)
+        accuracy, _ = lfw_eval.eval(model, last_save_path, device)
+        
+        # Save the best model if accuracy improves
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_model_path = os.path.join(params.save_path, f'{params.network}_best.pth')
+            torch.save(model.state_dict(), best_model_path)
+            print(f"New best accuracy: {best_accuracy:.4f}. Model saved to {best_model_path}")
+        
+        print(f"Epoch {epoch} completed. Latest model saved to {last_save_path}. Best accuracy: {best_accuracy:.4f}")
 
 
 if __name__ == '__main__':

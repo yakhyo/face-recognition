@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 from typing import Callable, List, Optional, Type
 
+__all__ = ["sphere20", "sphere36", "sphere64"]
+
 
 class Conv2dNormActivation(nn.Sequential):
     """
@@ -171,7 +173,7 @@ class SphereNet(nn.Module):
         num_blocks: int,
         stride: int
     ) -> nn.Sequential:
-        
+
         layers: List[nn.Module] = [
             Conv2dNormActivation(
                 in_channels=in_channels,
