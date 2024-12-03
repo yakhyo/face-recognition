@@ -1,0 +1,1 @@
+These datasets are associated with the OpenSphere project and can be found at the following GitHub repository: OpenSphere (https://github.com/ydwen/opensphere)
