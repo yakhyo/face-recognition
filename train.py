@@ -31,7 +31,7 @@ def parse_arguments():
         '--database',
         type=str,
         default='WebFace',
-        choices=['WebFace', 'VggFace2'],
+        choices=['WebFace', 'VggFace2', "MS1M"],
         help='Database to use for training. Options: WebFace, VggFace2.'
     )
 
@@ -171,7 +171,7 @@ def train_one_epoch(model, classification_head, criterion, optimizer, data_loade
         # Log results at intervals
         if batch_idx % params.print_freq == 0:
             print(
-                f'Epoch: [{epoch}/{params.epochs}][{batch_idx:04d}/{len(data_loader):04d}] '
+                f'Epoch: [{epoch}/{params.epochs}][{batch_idx:05d}/{len(data_loader):05d}] '
                 f'Loss: {losses.avg:6.3f}, '
                 f'Accuracy: {accuracy_meter.avg:4.2f}%, '
                 f'Time: {batch_time.avg:4.3f}s'
@@ -204,6 +204,12 @@ def main(params):
             'mean': (0.5334, 0.4158, 0.3601),
             'std': (0.2467, 0.2135, 0.2010)
         },
+        'MS1M': {
+            'num_classes': 85742,
+            'step_size': [10, 15, 20],
+            'mean':(0.5, 0.5, 0.5),
+            'std': (0.5, 0.5, 0.5)
+        }
     }
 
     if params.database not in db_config:
