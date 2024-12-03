@@ -195,20 +195,20 @@ def main(params):
         'WebFace': {
             'num_classes': 10572,
             'step_size': [10, 20],
-            'mean': (0.5203, 0.4045, 0.3465),
-            'std': (0.2417, 0.2076, 0.1948)
+            'mean': (0.485, 0.456, 0.406),
+            'std': (0.229, 0.224, 0.225)
         },
         'VggFace2': {
             'num_classes': 8631,
             'step_size': [10, 15, 25],
-            'mean': (0.5334, 0.4158, 0.3601),
+            'mean': (0.485, 0.456, 0.406),
             'std': (0.2467, 0.2135, 0.2010)
         },
         'MS1M': {
             'num_classes': 85742,
             'step_size': [10, 15, 20],
-            'mean':(0.5, 0.5, 0.5),
-            'std': (0.5, 0.5, 0.5)
+            'mean': (0.485, 0.456, 0.406),
+            'std': (0.229, 0.224, 0.225)
         }
     }
 
@@ -290,17 +290,17 @@ def main(params):
         )
         last_save_path = os.path.join(params.save_path, f'{params.network}_last.pth')
         torch.save(model.state_dict(), last_save_path)
-        
+
         scheduler.step()
         accuracy, _ = lfw_eval.eval(model, last_save_path, device)
-        
+
         # Save the best model if accuracy improves
         if accuracy > best_accuracy:
             best_accuracy = accuracy
             best_model_path = os.path.join(params.save_path, f'{params.network}_best.pth')
             torch.save(model.state_dict(), best_model_path)
             print(f"New best accuracy: {best_accuracy:.4f}. Model saved to {best_model_path}")
-        
+
         print(f"Epoch {epoch} completed. Latest model saved to {last_save_path}. Best accuracy: {best_accuracy:.4f}")
 
 

@@ -111,8 +111,8 @@ def eval(model, model_path=None, device=None):
     model.load_state_dict(torch.load(model_path))
     model.to(device).eval()
 
-    root = 'data/test/LFW/lfw_aligned_112x112/'
-    with open('data/test/LFW/pairs.txt') as f:
+    root = 'data/val/lfw_112x112/'
+    with open('data/val/lfw_ann.txt') as f:
         pair_lines = f.readlines()[1:]
 
     # Extract features and calculate distances
@@ -124,13 +124,13 @@ def eval(model, model_path=None, device=None):
             if len(parts) == 3:  # Same person
                 is_same = 1
                 name1, index1, index2 = parts[0], parts[1], parts[2]
-                img1_path = os.path.join(root, name1, f"{name1}_{int(index1):04d}.jpg")
-                img2_path = os.path.join(root, name1, f"{name1}_{int(index2):04d}.jpg")
+                img1_path = os.path.join(root, name1, f"{name1}_{int(index1):04d}.bmp")
+                img2_path = os.path.join(root, name1, f"{name1}_{int(index2):04d}.bmp")
             elif len(parts) == 4:  # Different persons
                 is_same = 0
                 name1, index1, name2, index2 = parts
-                img1_path = os.path.join(root, name1, f"{name1}_{int(index1):04d}.jpg")
-                img2_path = os.path.join(root, name2, f"{name2}_{int(index2):04d}.jpg")
+                img1_path = os.path.join(root, name1, f"{name1}_{int(index1):04d}.bmp")
+                img2_path = os.path.join(root, name2, f"{name2}_{int(index2):04d}.bmp")
             else:
                 print(f"Skipping invalid line: {line.strip()}")
                 continue
