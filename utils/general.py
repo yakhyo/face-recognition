@@ -1,4 +1,7 @@
 import os
+import random
+import numpy as np
+
 import torch
 import torch.distributed as distributed
 
@@ -106,3 +109,10 @@ def reduce_tensor(tensor, n):
     distributed.all_reduce(rt, op=distributed.ReduceOp.SUM)
     rt /= n
     return rt
+
+
+def setup_seed(seed=42):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)

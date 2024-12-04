@@ -1,4 +1,3 @@
-
 import os
 import time
 import argparse
@@ -7,11 +6,10 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-
 import lfw_eval_v2 as lfw_eval
 from utils.dataset import ImageFolder
 from utils.metrics import ArcFace, MarginCosineProduct, SphereFace
-from utils.general import AverageMeter, calculate_accuracy, init_distributed_mode, reduce_tensor
+from utils.general import AverageMeter, calculate_accuracy, init_distributed_mode, reduce_tensor, setup_seed
 
 from models import mobilefacenet
 from models.sphereface import sphere20, sphere36, sphere64
@@ -58,15 +56,10 @@ def parse_arguments():
     parser.add_argument(
         '--step-size',
         type=list,
-        default=None,
+        default=[10, 20, 25],
         help='Milestones for learning rate decay in MultiStepLR. Default: None.'
     )
-    parser.add_argument(
-        '--momentum',
-        type=float,
-        default=0.9,
-        help='Momentum factor for SGD optimizer. Default: 0.9.'
-    )
+    parser.add_argument('--momentum', type=float, default=0.9, help='Momentum factor for SGD optimizer. Default: 0.9.')
     parser.add_argument(
         '--weight-decay',
         type=float,
@@ -74,19 +67,13 @@ def parse_arguments():
         help='Weight decay for SGD optimizer. Default: 5e-4.'
     )
 
-    # Data Transformations
     parser.add_argument(
         '--save-path',
         type=str,
         default='weights',
         help='Path to save model checkpoints. Default: `weights`.'
     )
-    parser.add_argument(
-        '--workers',
-        type=int,
-        default=8,
-        help='Number of data loader workers. Default: 8.'
-    )
+    parser.add_argument('--workers', type=int, default=8, help='Number of data loader workers. Default: 8.')
     parser.add_argument(
         '--print-freq',
         type=int,
@@ -95,6 +82,11 @@ def parse_arguments():
     )
 
     parser.add_argument("--world-size", default=1, type=int, help="number of distributed processes")
+    parser.add_argument(
+        "--use-deterministic-algorithms",
+        action="store_true",
+        help="Forces the use of deterministic algorithms only."
+    )
 
     return parser.parse_args()
 
@@ -164,9 +156,13 @@ def train_one_epoch(model, classification_head, criterion, optimizer, data_loade
 
         # Compute loss and accuracy
         loss = criterion(output, target)
+
+        # calculate_accuracy is a function to compute classification accuracy.
         accuracy = calculate_accuracy(output, target)
 
         if args.distributed:
+            # reduce_tensor is used in distributed training to aggregate metrics (e.g., loss, accuracy)
+            # across multiple GPUs. It ensures all devices contribute to the final metric computation.
             reduced_loss = reduce_tensor(loss, args.world_size)
             accuracy = reduce_tensor(accuracy, args.world_size)
         else:
@@ -191,8 +187,7 @@ def train_one_epoch(model, classification_head, criterion, optimizer, data_loade
 
         # Log results at intervals
         if batch_idx % params.print_freq == 0 or last_batch:
-            lrl = [param_group['lr'] for param_group in optimizer.param_groups]
-            lr = sum(lrl) / len(lrl)
+            lr = optimizer.param_groups[0]['lr']
             print(
                 f'Epoch: [{epoch}/{params.epochs}][{batch_idx:05d}/{len(data_loader):05d}] '
                 f'Loss: {losses.avg:6.3f}, '
@@ -212,10 +207,14 @@ def train_one_epoch(model, classification_head, criterion, optimizer, data_loade
 
 def main(params):
     init_distributed_mode(params)
+
+    setup_seed()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    if torch.cuda.is_available():
-        torch.backends.cuda.matmul.allow_tf32 = True
+    if params.use_deterministic_algorithms:
+        torch.backends.cudnn.benchmark = False
+        torch.use_deterministic_algorithms(True)
+    else: 
         torch.backends.cudnn.benchmark = True
 
     # Configure dataset-specific settings
