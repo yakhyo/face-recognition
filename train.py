@@ -9,7 +9,7 @@ from torchvision import transforms
 import lfw_eval_v2 as lfw_eval
 from utils.dataset import ImageFolder
 from utils.metrics import ArcFace, MarginCosineProduct, SphereFace
-from utils.general import AverageMeter, calculate_accuracy, init_distributed_mode, reduce_tensor, setup_seed
+from utils.general import AverageMeter, calculate_accuracy, init_distributed_mode, reduce_tensor, setup_seed, save_on_master, LOGGER
 
 from models import mobilefacenet
 from models.sphereface import sphere20, sphere36, sphere64
@@ -53,11 +53,27 @@ def parse_arguments():
     parser.add_argument('--batch-size', type=int, default=512, help='Batch size for training. Default: 512.')
     parser.add_argument('--epochs', type=int, default=30, help='Number of epochs for training. Default: 30.')
     parser.add_argument('--lr', type=float, default=0.1, help='Initial learning rate. Default: 0.1.')
+    # lr_scheduler configuration
     parser.add_argument(
-        '--step-size',
-        type=list,
+        '--lr-scheduler',
+        type=str,
+        default='MultiStepLR',
+        choices=['StepLR', 'MultiStepLR'],
+        help='Learning rate scheduler type.'
+    )
+    parser.add_argument('--step-size', type=int, default=10, help='Period of learning rate decay for StepLR.')
+    parser.add_argument(
+        '--gamma',
+        type=float,
+        default=0.1,
+        help='Multiplicative factor of learning rate decay for StepLR and ExponentialLR.'
+    )
+    parser.add_argument(
+        '--milestones',
+        type=int,
+        nargs='+',
         default=[10, 20, 25],
-        help='Milestones for learning rate decay in MultiStepLR. Default: None.'
+        help='List of epoch indices to reduce learning rate for MultiStepLR (ignored if StepLR is used).'
     )
     parser.add_argument('--momentum', type=float, default=0.9, help='Momentum factor for SGD optimizer. Default: 0.9.')
     parser.add_argument(
@@ -66,14 +82,15 @@ def parse_arguments():
         default=5e-4,
         help='Weight decay for SGD optimizer. Default: 5e-4.'
     )
-
     parser.add_argument(
         '--save-path',
         type=str,
         default='weights',
         help='Path to save model checkpoints. Default: `weights`.'
     )
-    parser.add_argument('--workers', type=int, default=8, help='Number of data loader workers. Default: 8.')
+    parser.add_argument('--num-workers', type=int, default=8, help='Number of data loader workers. Default: 8.')
+    parser.add_argument("--checkpoint", type=str, default=None, help="Path to checkpoint to continue training.")
+
     parser.add_argument(
         '--print-freq',
         type=int,
@@ -128,9 +145,16 @@ def get_dbconfig(database):
     return db_config[database]['num_classes'], db_config[database]['step_size']
 
 
-def train_one_epoch(model, classification_head, criterion, optimizer, data_loader, device, epoch, params) -> None:
+def train_one_epoch(
+    model,
+    classification_head,
+    criterion, optimizer,
+    data_loader,
+    device,
+    epoch,
+    params
+) -> None:
     model.train()
-
     losses = AverageMeter("Avg Loss", ":6.3f")
     batch_time = AverageMeter("Batch Time", ":4.3f")
     accuracy_meter = AverageMeter("Accuracy", ":4.2f")
@@ -188,21 +212,23 @@ def train_one_epoch(model, classification_head, criterion, optimizer, data_loade
         # Log results at intervals
         if batch_idx % params.print_freq == 0 or last_batch:
             lr = optimizer.param_groups[0]['lr']
-            print(
+            log = (
                 f'Epoch: [{epoch}/{params.epochs}][{batch_idx:05d}/{len(data_loader):05d}] '
                 f'Loss: {losses.avg:6.3f}, '
                 f'Accuracy: {accuracy_meter.avg:4.2f}%, '
                 f'LR: {lr:.5f} '
                 f'Time: {batch_time.avg:4.3f}s'
             )
+            LOGGER.info(log)
 
     # End-of-epoch summary
-    print(
+    log = (
         f'Epoch [{epoch}/{params.epochs}] Summary: '
         f'Loss: {losses.avg:6.3f}, '
         f'Accuracy: {accuracy_meter.avg:4.2f}%, '
         f'Total Time: {batch_time.sum:4.3f}s'
     )
+    LOGGER.info(log)
 
 
 def main(params):
@@ -214,11 +240,22 @@ def main(params):
     if params.use_deterministic_algorithms:
         torch.backends.cudnn.benchmark = False
         torch.use_deterministic_algorithms(True)
-    else: 
+    else:
         torch.backends.cudnn.benchmark = True
 
     # Configure dataset-specific settings
-    num_classes, step_size = get_dbconfig(params.database)
+    db_config = {
+        'WebFace': {
+            'num_classes': 10572,
+        },
+        'VggFace2': {
+            'num_classes': 8631,
+        },
+        'MS1M': {
+            'num_classes': 85742,
+        }
+    }
+    num_classes = db_config[params.database]['num_classes']
 
     # Model selection based on arguments
     if params.network == 'sphere20':
@@ -258,6 +295,7 @@ def main(params):
     ])
 
     # DataLoader
+    LOGGER.info('Loading training data.')
     train_dataset = ImageFolder(root=params.root, transform=train_transform)
 
     if params.distributed:
@@ -269,11 +307,11 @@ def main(params):
         train_dataset,
         batch_size=params.batch_size,
         sampler=train_sampler,
-        num_workers=params.workers,
+        num_workers=params.num_workers,
         pin_memory=True
     )
 
-    print(f'Length of train dataset: {len(train_loader.dataset)}, Number of Identities: {num_classes}')
+    LOGGER.info(f'Length of training dataset: {len(train_loader.dataset)}, Number of Identities: {num_classes}')
 
     # Loss and optimizer
     criterion = torch.nn.CrossEntropyLoss()
@@ -285,11 +323,35 @@ def main(params):
         momentum=params.momentum,
         weight_decay=params.weight_decay
     )
-    lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=step_size, gamma=0.1)
+    # Learning rate scheduler
+    if params.lr_scheduler == 'MultiStepLR':
+        lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=params.milestones, gamma=params.gamma)
+    elif params.lr_scheduler == 'StepLR':
+        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=params.step_size, gamma=params.gamma)
+    else:
+        raise ValueError(f"Unsupported lr_scheduler type: {params.lr_scheduler}")
+
+    start_epoch = 0
+    if params.checkpoint and os.path.isfile(params.checkpoint):
+        ckpt = torch.load(params.checkpoint, map_location=device, weights_only=True)
+
+        model_without_ddp.load_state_dict(ckpt['model'])
+        optimizer.load_state_dict(ckpt['optimizer'])
+        lr_scheduler.load_state_dict(ckpt['lr_scheduler'])
+
+        # Move optimizer states to device
+        for state in optimizer.state.values():
+            for k, v in state.items():
+                if isinstance(v, torch.Tensor):
+                    state[k] = v.to(device)
+
+        start_epoch = ckpt['epoch']
+        LOGGER.info(f'Resumed training from {params.checkpoint}, starting at epoch {start_epoch}')
 
     best_accuracy = 0.0
     # Training loop
-    for epoch in range(1, params.epochs + 1):
+    LOGGER.info(f'Training started for {params.network}, Classifier: {params.classifier}')
+    for epoch in range(start_epoch, params.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
         train_one_epoch(
@@ -302,21 +364,41 @@ def main(params):
             epoch,
             params
         )
-        last_save_path = os.path.join(params.save_path, f'{params.network}_{params.classifier}_last.pth')
-        torch.save(model_without_ddp.state_dict(), last_save_path)
-
         lr_scheduler.step()
-        if torch.distributed.get_rank() == 0:
+
+        base_filename = f'{params.network}_{params.classifier}'
+
+        last_save_path = os.path.join(params.save_path, f'{base_filename}_last.pth')
+
+        # Save the last checkpoint
+        checkpoint = {
+            'epoch': epoch + 1,
+            'model': model_without_ddp.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'lr_scheduler': lr_scheduler.state_dict(),
+            'args': params
+        }
+
+        save_on_master(checkpoint, last_save_path)
+
+        if params.local_rank == 0:
             accuracy, _ = lfw_eval.eval(model_without_ddp, last_save_path, device)
 
-            # Save the best model if accuracy improves
-            if accuracy > best_accuracy:
-                best_accuracy = accuracy
-                best_model_path = os.path.join(params.save_path, f'{params.network}_{params.classifier}_best.pth')
-                torch.save(model_without_ddp.state_dict(), best_model_path)
-                print(f"New best accuracy: {best_accuracy:.4f}. Model saved to {best_model_path}")
+        # Save the best model if accuracy improves
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            save_on_master(checkpoint, os.path.join(params.save_path, f'{base_filename}_best.pth'))
+            LOGGER.info(
+                f"New best accuracy: {best_accuracy:.4f}."
+                f"Model saved to {params.save_path} with `_best` postfix."
+            )
 
-        print(f"Epoch {epoch} completed. Latest model saved to {last_save_path}. Best accuracy: {best_accuracy:.4f}")
+        LOGGER.info(
+            f"Epoch {epoch} completed. Latest model saved to {params.save_path} with `_last` postfix."
+            f"Best accuracy: {best_accuracy:.4f}"
+        )
+
+    LOGGER.info('Training completed.')
 
 
 if __name__ == '__main__':

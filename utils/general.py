@@ -1,9 +1,22 @@
 import os
 import random
+import logging
 import numpy as np
 
 import torch
 import torch.distributed as distributed
+
+
+# Custom filter to restrict logs to the main process
+class MainProcessFilter(logging.Filter):
+    def filter(self, record):
+        return is_main_process()
+
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+LOGGER = logging.getLogger()
+LOGGER.addFilter(MainProcessFilter())
 
 
 class AverageMeter:
@@ -95,6 +108,35 @@ def init_distributed_mode(args):
         rank=args.rank
     )
     setup_for_distributed(args.rank == 0)
+
+
+def is_dist_avail_and_initialized():
+    if not distributed.is_available():
+        return False
+    if not distributed.is_initialized():
+        return False
+    return True
+
+
+def get_world_size():
+    if not is_dist_avail_and_initialized():
+        return 1
+    return distributed.get_world_size()
+
+
+def get_rank():
+    if not is_dist_avail_and_initialized():
+        return 0
+    return distributed.get_rank()
+
+
+def is_main_process():
+    return get_rank() == 0
+
+
+def save_on_master(*args, **kwargs):
+    if is_main_process():
+        torch.save(*args, **kwargs)
 
 
 def reduce_tensor(tensor, n):
