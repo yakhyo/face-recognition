@@ -123,28 +123,6 @@ def get_classification_head(classifier, embedding_dim, num_classes):
     return classifiers[classifier]
 
 
-def get_dbconfig(database):
-    db_config = {
-        'WebFace': {
-            'num_classes': 10572,
-            'step_size': [10, 20, 25],
-        },
-        'VggFace2': {
-            'num_classes': 8631,
-            'step_size': [10, 15, 25],
-        },
-        'MS1M': {
-            'num_classes': 85742,
-            'step_size': [10, 15, 25],
-        }
-    }
-
-    if database not in db_config:
-        raise ValueError("Unsupported database!")
-
-    return db_config[database]['num_classes'], db_config[database]['step_size']
-
-
 def train_one_epoch(
     model,
     classification_head,
@@ -255,6 +233,9 @@ def main(params):
             'num_classes': 85742,
         }
     }
+    if params.database not in db_config:
+        raise ValueError("Unsupported database!")
+
     num_classes = db_config[params.database]['num_classes']
 
     # Model selection based on arguments
@@ -368,7 +349,7 @@ def main(params):
 
         base_filename = f'{params.network}_{params.classifier}'
 
-        last_save_path = os.path.join(params.save_path, f'{base_filename}_last.pth')
+        last_save_path = os.path.join(params.save_path, f'{base_filename}_last.ckpt')
 
         # Save the last checkpoint
         checkpoint = {
@@ -387,7 +368,7 @@ def main(params):
         # Save the best model if accuracy improves
         if accuracy > best_accuracy:
             best_accuracy = accuracy
-            save_on_master(checkpoint, os.path.join(params.save_path, f'{base_filename}_best.pth'))
+            save_on_master(checkpoint, os.path.join(params.save_path, f'{base_filename}_best.ckpt'))
             LOGGER.info(
                 f"New best accuracy: {best_accuracy:.4f}."
                 f"Model saved to {params.save_path} with `_best` postfix."
