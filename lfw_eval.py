@@ -109,7 +109,7 @@ def eval(model, model_path=None, device=None):
 
     # Load model
     if model_path is not None:
-        model.load_state_dict(torch.load(model_path, device=device, weights_only=True)['model'])
+        model.load_state_dict(torch.load(model_path, map_location=device)['model'])
     model.to(device).eval()
 
     root = 'data/val'

@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-import lfw_eval_v2 as lfw_eval
+import lfw_eval
 from utils.dataset import ImageFolder
 from utils.metrics import ArcFace, MarginCosineProduct, SphereFace
 from utils.general import AverageMeter, calculate_accuracy, init_distributed_mode, reduce_tensor, setup_seed, save_on_master, LOGGER
@@ -98,7 +98,9 @@ def parse_arguments():
         help='Frequency (in batches) for printing training progress. Default: 100.'
     )
 
-    parser.add_argument("--world-size", default=1, type=int, help="number of distributed processes")
+    parser.add_argument("--world-size", default=1, type=int, help="Number of distributed processes")
+    parser.add_argument('--local_rank', type=int, default=0, help='Local rank for distributed training')
+
     parser.add_argument(
         "--use-deterministic-algorithms",
         action="store_true",
@@ -362,8 +364,7 @@ def main(params):
 
         save_on_master(checkpoint, last_save_path)
 
-        if params.local_rank == 0:
-            accuracy, _ = lfw_eval.eval(model_without_ddp, last_save_path, device)
+        accuracy, _ = lfw_eval.eval(model_without_ddp, device=device)
 
         # Save the best model if accuracy improves
         if accuracy > best_accuracy:
