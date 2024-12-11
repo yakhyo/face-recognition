@@ -44,6 +44,49 @@ class AverageMeter:
         return fmtstr.format(**self.__dict__)
 
 
+class EarlyStopping:
+    """
+    Early stopping utility to stop training when the monitored metric stops improving.
+    Combines features like `min_delta` and tracks both accuracy (fitness) and loss.
+    """
+
+    def __init__(self, patience=10, min_delta=0):
+        """
+        Args:
+            patience (int): Number of epochs to wait after the last improvement.
+            min_delta (float): Minimum change in the monitored value to qualify as an improvement.
+        """
+        self.patience = patience
+        self.min_delta = min_delta
+        self.best_fitness = 0.0  # Best observed metric (e.g., accuracy or loss)
+        self.best_epoch = 0
+        self.counter = 0
+        self.early_stop = False
+
+    def __call__(self, epoch, fitness):
+        """
+        Checks if training should stop.
+        Args:
+            epoch (int): Current epoch number.
+            fitness (float): Current metric value to monitor (e.g., accuracy or loss).
+        """
+        if fitness >= self.best_fitness + self.min_delta:
+            self.best_fitness = fitness
+            self.best_epoch = epoch
+            self.counter = 0
+        else:
+            self.counter += 1
+
+        if self.counter >= self.patience:
+            self.early_stop = True
+            print(
+                f"Stopping training early as no improvement observed in last {self.patience} epochs. "
+                f"Best results observed at epoch {self.best_epoch}, "
+                f"best metric: {self.best_fitness:.4f}"
+            )
+        return self.early_stop
+
+
 @torch.no_grad()
 def calculate_accuracy(output, target):
     """Computes the accuracy for the top-1 prediction."""

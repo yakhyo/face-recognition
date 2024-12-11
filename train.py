@@ -9,7 +9,16 @@ from torchvision import transforms
 import lfw_eval
 from utils.dataset import ImageFolder
 from utils.metrics import ArcFace, MarginCosineProduct, SphereFace
-from utils.general import AverageMeter, calculate_accuracy, init_distributed_mode, reduce_tensor, setup_seed, save_on_master, LOGGER
+from utils.general import (
+    setup_seed,
+    reduce_tensor,
+    save_on_master,
+    calculate_accuracy,
+    init_distributed_mode,
+    AverageMeter,
+    EarlyStopping,
+    LOGGER,
+)
 
 from models import mobilefacenet
 from models.sphereface import sphere20, sphere36, sphere64
@@ -332,6 +341,8 @@ def main(params):
         LOGGER.info(f'Resumed training from {params.checkpoint}, starting at epoch {start_epoch}')
 
     best_accuracy = 0.0
+    early_stopping = EarlyStopping(patience=10)
+
     # Training loop
     LOGGER.info(f'Training started for {params.network}, Classifier: {params.classifier}')
     for epoch in range(start_epoch, params.epochs):
@@ -365,6 +376,9 @@ def main(params):
         save_on_master(checkpoint, last_save_path)
 
         accuracy, _ = lfw_eval.eval(model_without_ddp, device=device)
+
+        if early_stopping(epoch, accuracy):
+            break
 
         # Save the best model if accuracy improves
         if accuracy > best_accuracy:
