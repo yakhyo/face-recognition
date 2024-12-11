@@ -47,7 +47,7 @@ class AverageMeter:
 class EarlyStopping:
     """
     Early stopping utility to stop training when the monitored metric stops improving.
-    Combines features like `min_delta` and tracks both accuracy (fitness) and loss.
+    Combines features like `min_delta` and tracks accuracy (fitness).
     """
 
     def __init__(self, patience=10, min_delta=0):
@@ -68,7 +68,7 @@ class EarlyStopping:
         Checks if training should stop.
         Args:
             epoch (int): Current epoch number.
-            fitness (float): Current metric value to monitor (e.g., accuracy or loss).
+            fitness (float): Current metric value to monitor accuracy.
         """
         if fitness >= self.best_fitness + self.min_delta:
             self.best_fitness = fitness

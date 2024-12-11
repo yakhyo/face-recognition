@@ -375,7 +375,8 @@ def main(params):
 
         save_on_master(checkpoint, last_save_path)
 
-        accuracy, _ = lfw_eval.eval(model_without_ddp, device=device)
+        if params.local_rank == 0:
+            accuracy, _ = lfw_eval.eval(model_without_ddp, device=device)
 
         if early_stopping(epoch, accuracy):
             break
