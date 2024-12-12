@@ -341,6 +341,7 @@ def main(params):
         LOGGER.info(f'Resumed training from {params.checkpoint}, starting at epoch {start_epoch}')
 
     best_accuracy = 0.0
+    curr_accuracy = 0.0
     early_stopping = EarlyStopping(patience=10)
 
     # Training loop
@@ -376,14 +377,14 @@ def main(params):
         save_on_master(checkpoint, last_save_path)
 
         if params.local_rank == 0:
-            accuracy, _ = lfw_eval.eval(model_without_ddp, device=device)
+            curr_accuracy, _ = lfw_eval.eval(model_without_ddp, device=device)
 
-        if early_stopping(epoch, accuracy):
+        if early_stopping(epoch, curr_accuracy):
             break
 
         # Save the best model if accuracy improves
-        if accuracy > best_accuracy:
-            best_accuracy = accuracy
+        if curr_accuracy > best_accuracy:
+            best_accuracy = curr_accuracy
             save_on_master(checkpoint, os.path.join(params.save_path, f'{base_filename}_best.ckpt'))
             LOGGER.info(
                 f"New best accuracy: {best_accuracy:.4f}."
