@@ -2,12 +2,10 @@ import os
 import numpy as np
 from PIL import Image
 
-
 import torch
 from torchvision import transforms
 
-
-from models import mobilefacenet
+from models.mobilenet import MobileNetV2
 from models.sphereface import sphere20, sphere36, sphere64
 
 
@@ -109,7 +107,9 @@ def eval(model, model_path=None, device=None):
 
     # Load model
     if model_path is not None:
-        model.load_state_dict(torch.load(model_path, map_location=device)['model'])
+        ckpt = torch.load(model_path, map_location=device)
+        print("Best epoch:", ckpt['epoch'])
+        model.load_state_dict(ckpt['model'])
     model.to(device).eval()
 
     root = 'data/val'
@@ -168,5 +168,5 @@ def eval(model, model_path=None, device=None):
 
 
 if __name__ == '__main__':
-    _, result = eval(sphere20(512).to('cuda'), model_path='weights/sphere20_last.pth')
+    _, result = eval(sphere20(512).to('cuda'), model_path='weights/sphere20_MCP_last.ckpt')
     np.savetxt("result.txt", result, '%s')

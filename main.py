@@ -8,7 +8,7 @@ from torchvision import transforms
 
 import lfw_eval
 from utils.dataset import ImageFolder
-from utils.metrics import ArcFace, MarginCosineProduct, SphereFace
+from utils.metrics import MarginCosineProduct, AngleLinear
 from utils.general import (
     setup_seed,
     reduce_tensor,
@@ -20,7 +20,7 @@ from utils.general import (
     LOGGER,
 )
 
-from models import mobilefacenet
+from models.mobilenet import MobileNetV2
 from models.sphereface import sphere20, sphere36, sphere64
 
 
@@ -123,8 +123,7 @@ def parse_arguments():
 def get_classification_head(classifier, embedding_dim, num_classes):
     classifiers = {
         'MCP': MarginCosineProduct(embedding_dim, num_classes),
-        'AL': SphereFace(embedding_dim, num_classes),
-        'ARC': ArcFace(embedding_dim, num_classes),
+        'AL': AngleLinear(embedding_dim, num_classes),
         'L': torch.nn.Linear(embedding_dim, num_classes, bias=False)
     }
 
@@ -257,7 +256,7 @@ def main(params):
     elif params.network == 'sphere64':
         model = sphere64(embedding_dim=512, in_channels=3)
     elif params.network == "mobile":
-        model = MobileNetV2(input_size=(112, 112))
+        model = MobileNetV2(embedding_dim=512)
     else:
         raise ValueError("Unsupported network!")
 

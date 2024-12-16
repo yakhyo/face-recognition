@@ -1,80 +1,9 @@
 import torch
 import torch.nn as nn
 from typing import Callable, List, Optional, Type
+from models.common import Conv2dNormActivation
 
 __all__ = ["sphere20", "sphere36", "sphere64"]
-
-
-class Conv2dNormActivation(nn.Sequential):
-    """
-    A modular convolutional block that combines a 2D convolutional layer, optional normalization, and optional activation.
-
-    Args:
-        in_channels (int): Number of input channels for the convolution.
-        out_channels (int): Number of output channels for the convolution.
-        kernel_size (int): Size of the convolution kernel. Default: 3.
-        stride (int): Stride of the convolution. Default: 1.
-        padding (Optional[int]): Padding for the convolution. Default: None (calculated as `(kernel_size - 1) // 2 * dilation`).
-        groups (int): Number of groups for group convolution. Default: 1.
-        norm_layer (Optional[Callable[..., nn.Module]]): Normalization layer to apply after convolution. Default: `None`.
-        activation_layer (Optional[Callable[..., nn.Module]]): Activation layer to apply after normalization. Default: `nn.ReLU`.
-        dilation (int): Dilation factor for the convolution. Default: 1.
-        inplace (Optional[bool]): Whether to perform the activation in-place (for applicable activations). Default: True.
-        bias (bool): Whether to include a bias term in the convolution. Default: True.
-
-    Notes:
-        - If `padding` is not specified, it is automatically calculated to preserve spatial dimensions for stride=1.
-        - If `norm_layer` is set to `None`, the normalization step will be skipped.
-        - If `activation_layer` is set to `None`, the activation step will be skipped.
-
-    Example:
-        >>> block = Conv2dNormActivation(64, 128, kernel_size=3, stride=2, activation_layer=nn.LeakyReLU)
-        >>> x = torch.randn(1, 64, 32, 32)
-        >>> output = block(x)  # Output tensor with shape (1, 128, 16, 16)
-
-    """
-
-    def __init__(
-            self,
-            in_channels: int,
-            out_channels: int,
-            kernel_size: int = 3,
-            stride: int = 1,
-            padding: Optional = None,
-            groups: int = 1,
-            norm_layer: Optional[Callable[..., nn.Module]] = None,
-            activation_layer: Optional[Callable[..., nn.Module]] = nn.ReLU,
-            dilation: int = 1,
-            inplace: Optional[bool] = True,
-            bias: bool = True,
-    ) -> None:
-
-        if padding is None:
-            padding = (kernel_size - 1) // 2 * dilation
-
-        layers: List[nn.Module] = [
-            nn.Conv2d(
-                in_channels=in_channels,
-                out_channels=out_channels,
-                kernel_size=kernel_size,
-                stride=stride,
-                padding=padding,
-                dilation=dilation,
-                groups=groups,
-                bias=bias,
-            )
-        ]
-        if norm_layer is not None:
-            layers.append(norm_layer(out_channels))
-
-        if activation_layer is not None:
-            if activation_layer == nn.PReLU:
-                layers.append(activation_layer(num_parameters=out_channels))
-            else:
-                params = {} if inplace is None else {"inplace": inplace}
-                layers.append(activation_layer(**params))
-
-        super().__init__(*layers)
 
 
 class ResidualBlock(nn.Module):
