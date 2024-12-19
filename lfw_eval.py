@@ -5,7 +5,8 @@ from PIL import Image
 import torch
 from torchvision import transforms
 
-from models.mobilenet import MobileNetV2
+from models.mobilenetv1 import MobileNetV1
+from models.mobilenetv2 import MobileNetV2
 from models.sphereface import sphere20, sphere36, sphere64
 
 
@@ -169,4 +170,7 @@ def eval(model, model_path=None, device=None):
 
 if __name__ == '__main__':
     _, result = eval(sphere20(512).to('cuda'), model_path='weights/sphere20_MCP_last.ckpt')
-    np.savetxt("result.txt", result, '%s')
+    _, result = eval(sphere36(512).to('cuda'), model_path='weights/sphere36_MCP_last.ckpt')
+    _, result = eval(MobileNetV2(512).to('cuda'), model_path='weights/mobile_MCP_last.ckpt')
+
+    # np.savetxt("result.txt", result, '%s')

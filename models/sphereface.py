@@ -80,7 +80,7 @@ class SphereNet(nn.Module):
         self.layer4 = self._make_layer(ResidualBlock, filters[2], filters[3], layers[3], stride=2)
 
         # Fully connected layer
-        self.fc = nn.Linear(512 * 7 * 7, embedding_dim)
+        self.fc = nn.Linear(filters[3] * 7 * 7, embedding_dim)
 
         # Initialize weights
         self._initialize_weights()

@@ -4,6 +4,9 @@ from models.common import Conv2dNormActivation, _make_divisible, GDC
 from typing import Callable, List, Optional, Type
 
 
+__all__ = ["MobileNetV2"]
+
+
 class InvertedResidual(nn.Module):
     def __init__(self, in_planes: int, out_planes: int, stride: int, expand_ratio: int, norm_layer=None) -> None:
         super().__init__()

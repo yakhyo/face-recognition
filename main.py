@@ -20,7 +20,8 @@ from utils.general import (
     LOGGER,
 )
 
-from models.mobilenet import MobileNetV2
+from models.mobilenetv1 import MobileNetV1
+from models.mobilenetv2 import MobileNetV2
 from models.sphereface import sphere20, sphere36, sphere64
 
 
@@ -47,7 +48,7 @@ def parse_arguments():
         '--network',
         type=str,
         default='sphere20',
-        choices=['sphere20', 'sphere36', 'sphere64', 'mobile'],
+        choices=['sphere20', 'sphere36', 'sphere64', 'mobilenetv1', 'mobilenetv2'],
         help='Network architecture to use. Options: sphere20, sphere36, sphere64, mobile.'
     )
     parser.add_argument(
@@ -255,7 +256,9 @@ def main(params):
         model = sphere36(embedding_dim=512, in_channels=3)
     elif params.network == 'sphere64':
         model = sphere64(embedding_dim=512, in_channels=3)
-    elif params.network == "mobile":
+    elif params.network == "mobilenetv1":
+        model = MobileNetV1(embedding_dim=512)
+    elif params.network == "mobilenetv2":
         model = MobileNetV2(embedding_dim=512)
     else:
         raise ValueError("Unsupported network!")

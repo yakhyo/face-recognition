@@ -24,7 +24,7 @@ class Conv2dNormActivation(nn.Sequential):
         padding (Optional[int]): Padding for the convolution. Default: None (calculated as `(kernel_size - 1) // 2 * dilation`).
         groups (int): Number of groups for group convolution. Default: 1.
         norm_layer (Optional[Callable[..., nn.Module]]): Normalization layer to apply after convolution. Default: `None`.
-        activation_layer (Optional[Callable[..., nn.Module]]): Activation layer to apply after normalization. Default: `nn.ReLU`.
+        activation_layer (Optional[Callable[..., nn.Module]]): Activation layer to apply after normalization. Default: `nn.PReLU`.
         dilation (int): Dilation factor for the convolution. Default: 1.
         inplace (Optional[bool]): Whether to perform the activation in-place (for applicable activations). Default: True.
         bias (bool): Whether to include a bias term in the convolution. Default: True.
@@ -49,8 +49,8 @@ class Conv2dNormActivation(nn.Sequential):
             stride: int = 1,
             padding: Optional = None,
             groups: int = 1,
-            norm_layer: Optional[Callable[..., nn.Module]] = None,
-            activation_layer: Optional[Callable[..., nn.Module]] = nn.ReLU,
+            norm_layer: Optional[Callable[..., nn.Module]] = nn.BatchNorm2d,
+            activation_layer: Optional[Callable[..., nn.Module]] = nn.PReLU,
             dilation: int = 1,
             inplace: Optional[bool] = True,
             bias: bool = True,
@@ -80,6 +80,37 @@ class Conv2dNormActivation(nn.Sequential):
             else:
                 params = {} if inplace is None else {"inplace": inplace}
                 layers.append(activation_layer(**params))
+
+        super().__init__(*layers)
+
+
+class DepthWiseSeparableConv2d(nn.Sequential):
+    """DepthWise Separable Convolutional with Depthwise and Pointwise layers followed by nn.BatchNorm2d and nn.ReLU"""
+
+    def __init__(
+            self,
+            in_channels: int,
+            out_channels: int,
+            stride: int,
+            norm_layer: Optional[Callable[..., torch.nn.Module]] = None
+    ) -> None:
+
+        if stride not in [1, 2]:
+            raise ValueError(f"stride should be 1 or 2 instead of {stride}")
+
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+
+        layers: List[nn.Module] = [
+            Conv2dNormActivation(
+                in_channels,
+                in_channels,
+                kernel_size=3,
+                stride=stride,
+                groups=in_channels,
+            ),  # Depthwise
+            Conv2dNormActivation(in_channels, out_channels, kernel_size=1)  # Pointwise
+        ]
 
         super().__init__(*layers)
 
