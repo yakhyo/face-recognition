@@ -15,15 +15,15 @@
 
 ## Results
 
-| Dataset | Backbone          | LFW (%) | CALFW (%) | CPLFW (%) | AgeDB_30 (%) | Num Params | Threshold |
-| ------- | ----------------- | ------- | --------- | --------- | ------------ | ---------- | --------- |
-| MS1MV2  | Sphere20          | 99.67   | XX.XX     | XX.XX     | XX.XX        | XXM        | 0.22      |
-| MS1MV2  | Sphere36          | 99.72   | XX.XX     | XX.XX     | XX.XX        | XXM        | 0.21      |
-| MS1MV2  | Sphere64          | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        |           |
-| MS1MV2  | MobileNetV1_0.25  | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        | XX        |
-| MS1MV2  | MobileNetV2       | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        | XX        |
-| MS1MV2  | MobileNetV3_Small | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        | XX        |
-| MS1MV2  | MobileNetV3_Large | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        | XX        |
+| Dataset | Backbone          | LFW (%) | CALFW (%) | CPLFW (%) | AgeDB_30 (%) | Num Params |
+| ------- | ----------------- | ------- | --------- | --------- | ------------ | ---------- |
+| MS1MV2  | Sphere20          | 99.67   | 95.61     | 88.75     | XX.XX        | XXM        |
+| MS1MV2  | Sphere36          | 99.72   | 95.64     | 89.92     | XX.XX        | XXM        |
+| MS1MV2  | Sphere64          | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        |
+| MS1MV2  | MobileNetV1_0.25  | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        |
+| MS1MV2  | MobileNetV2       | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        |
+| MS1MV2  | MobileNetV3_Small | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        |
+| MS1MV2  | MobileNetV3_Large | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        |
 
 ---
 
