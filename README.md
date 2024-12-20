@@ -1,28 +1,38 @@
-# CosFace with SphereNet Backbones
+# Face-Recognition Training Framework
 
-This repository contains the implementation of CosFace trained with SphereNet backbones (Sphere20, Sphere36, Sphere64) on the MS1M-ArcFace dataset. Evaluation was performed on the AFLW dataset.
+[![Downloads](https://img.shields.io/github/downloads/yakhyo/face-recognition/total)](https://github.com/yakhyo/face-recognition/releases)
+[![GitHub Repo stars](https://img.shields.io/github/stars/yakhyo/face-recognition)](https://github.com/yakhyo/face-recognition/stargazers)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/yakhyo/face-recognition)
+[![GitHub License](https://img.shields.io/github/license/yakhyo/face-recognition)](https://github.com/yakhyo/face-recognition/blob/main/LICENSE)
 
 ---
 
-## Features
+## 🔥 Updates
 
-- **Pretrained Weights**: Trained model weights are provided for reproducibility.
-- **Multi-GPU Support**: Leverage distributed training for better performance.
-- **Rewritten Code**: Simplified for ease of usability and flexibility.
+- `2024/12/xx`: 🔥 We released the **Face-Recognition** training framework.
 
 ---
 
 ## Results
 
-### Evaluation on AFLW Dataset
+| Dataset | Backbone          | LFW (%) | CALFW (%) | CPLFW (%) | AgeDB_30 (%) | Num Params | Threshold |
+| ------- | ----------------- | ------- | --------- | --------- | ------------ | ---------- | --------- |
+| MS1MV2  | Sphere20          | 99.67   | XX.XX     | XX.XX     | XX.XX        | XXM        | 0.22      |
+| MS1MV2  | Sphere36          | 99.72   | XX.XX     | XX.XX     | XX.XX        | XXM        | 0.21      |
+| MS1MV2  | Sphere64          | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        |           |
+| MS1MV2  | MobileNetV1_0.25  | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        | XX        |
+| MS1MV2  | MobileNetV2       | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        | XX        |
+| MS1MV2  | MobileNetV3_Small | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        | XX        |
+| MS1MV2  | MobileNetV3_Large | XX.XX   | XX.XX     | XX.XX     | XX.XX        | XXM        | XX        |
 
-| Backbone | Dataset      | Evaluation Dataset | Best Epoch Accuracy (%) | Best Epoch (#) | Last Epoch Accuracy (%) | Last Epoch (#) | Model Link    |
-| -------- | ------------ | ------------------ | ----------------------- | -------------- | ----------------------- | -------------- | ------------- |
-| Sphere20 | MS1M-ArcFace | AFLW               | 99.67                   | 30             | 99.67                   | 30             | [Download](#) |
-| Sphere36 | MS1M-ArcFace | AFLW               | 99.72                   | 13             | 99.55                   | 23             | [Download](#) |
-| Sphere64 | MS1M-ArcFace | AFLW               | XX.XX                   | XX             | XX.XX                   | XX             | [Download](#) |
+---
 
-_Note: Replace `XX.XX` and `XX` for Sphere64 with actual values after evaluation._
+## Features
+
+- **Feature Extraction**: Extract high-dimensional embeddings for each detected face.
+- **Face Recognition**: Match faces against a database of known identities.
+- **Real-Time Processing**: Optimized for real-time performance.
+- **Pretrained Models**: Includes support for pretrained models like `MobileNetV1/V2/V3`, `Sphere20`, and `Sphere36`.
 
 ---
 
@@ -31,7 +41,80 @@ _Note: Replace `XX.XX` and `XX` for Sphere64 with actual values after evaluation
 ### Installation
 
 ```bash
-git clone https://github.com/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/yakhyo/face-recognition.git
+cd face-recognition
 pip install -r requirements.txt
 ```
+
+### Training
+
+Codebase supports DDP, to run using DDP please use below example command:
+
+```bash
+torchrun --nproc_per_node=2 main.py --root data/train/ms1m_112x112 --database MS1M --network mobilenetv1 --classifier MCP
+```
+
+If you have a sinlge GPU then use below example command:
+
+```bash
+python main.py --root data/train/ms1m_112x112 --database MS1M --network mobilenetv1 --classifier MCP
+```
+
+### Evaluate
+
+To evaluate, please modify model, weights and validation data filenames in `lfw_eval.py`
+
+```bash
+python lfw_eval.py
+```
+
+---
+
+## Dataset
+
+You can download aligned and cropped (112x112) training and validation datasets from Kaggle.
+
+### Training Data
+
+- [CASIA-WebFace 112x112](https://www.kaggle.com/datasets/yakhyokhuja/webface-112x112)
+  - Identites: 10.6k
+  - #Images: 491k
+- [VGGFace2 112x112](https://www.kaggle.com/datasets/yakhyokhuja/vggface2-112x112)
+  - Identities: 8.6k
+  - #Images: 3.1M
+- [MS1MV2 112x112](https://www.kaggle.com/datasets/yakhyokhuja/ms1m-arcface-dataset)
+  - Identities: 85.7k
+  - #Images: 5.8M
+
+### Validation Data
+
+Validation data contains AgeDB_30, CALFW, CPLFW, LFW datasets.
+
+- [AgeDB_30, CALFW CPLFW, LFW 112x112](https://www.kaggle.com/datasets/yakhyokhuja/agedb-30-calfw-cplfw-lfw-aligned-112x112)
+
+---
+
+### Folder Structure
+
+```
+data/
+|-- train/
+|   |-- ms1m_112x112/
+|   |-- vggface2_112x112/
+|   |-- webface_112x112/
+|-- val/
+|   |-- agedb_30_112x112/
+|   |-- calfw_112x112/
+|   |-- cplfw_112x112/
+|   |-- lfw_112x112/
+|   |-- agedb_30_ann.txt
+|   |-- calfw_ann.txt
+|   |-- cplfw_ann.txt
+|   |-- lfw_ann.txt
+```
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
