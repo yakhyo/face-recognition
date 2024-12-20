@@ -90,7 +90,7 @@ class MobileNetV2(nn.Module):
             inverted_residual_setting = [
                 # t, c, n, s
                 [1, 16, 1, 1],
-                # [6, 24, 2, 2],
+                [6, 24, 2, 2],
                 [6, 32, 3, 2],
                 [6, 64, 4, 2],
                 [6, 96, 3, 1],
@@ -108,7 +108,13 @@ class MobileNetV2(nn.Module):
         input_channel = _make_divisible(input_channel * width_mult, round_nearest)
         self.last_channel = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
         features: List[nn.Module] = [
-            Conv2dNormActivation(3, input_channel, stride=2, activation_layer=nn.PReLU, norm_layer=norm_layer)
+            Conv2dNormActivation(
+                in_channels=3,
+                out_channels=input_channel,
+                stride=1,  # change from 2 -> 1
+                activation_layer=nn.PReLU,
+                norm_layer=norm_layer
+            )
         ]
         # building inverted residual blocks
         for t, c, n, s in inverted_residual_setting:

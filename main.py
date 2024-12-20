@@ -22,6 +22,7 @@ from utils.general import (
 
 from models.mobilenetv1 import MobileNetV1
 from models.mobilenetv2 import MobileNetV2
+from models.mobilenetv3 import mobilenet_v3_small, mobilenet_v3_large
 from models.sphereface import sphere20, sphere36, sphere64
 
 
@@ -48,7 +49,8 @@ def parse_arguments():
         '--network',
         type=str,
         default='sphere20',
-        choices=['sphere20', 'sphere36', 'sphere64', 'mobilenetv1', 'mobilenetv2'],
+        choices=['sphere20', 'sphere36', 'sphere64', 'mobilenetv1',
+                 'mobilenetv2', 'mobilenetv3_small', 'mobilenetv3_large'],
         help='Network architecture to use. Options: sphere20, sphere36, sphere64, mobile.'
     )
     parser.add_argument(
@@ -260,6 +262,10 @@ def main(params):
         model = MobileNetV1(embedding_dim=512)
     elif params.network == "mobilenetv2":
         model = MobileNetV2(embedding_dim=512)
+    elif params.network == "mobilenetv3_small":
+        model = mobilenet_v3_small(embedding_dim=512)
+    elif params.network == "mobilenetv3_large":
+        model = mobilenet_v3_large(embedding_dim=512)
     else:
         raise ValueError("Unsupported network!")
 
@@ -327,7 +333,7 @@ def main(params):
 
     start_epoch = 0
     if params.checkpoint and os.path.isfile(params.checkpoint):
-        ckpt = torch.load(params.checkpoint, map_location=device, weights_only=True)
+        ckpt = torch.load(params.checkpoint, map_location="cpu")
 
         model_without_ddp.load_state_dict(ckpt['model'])
         optimizer.load_state_dict(ckpt['optimizer'])

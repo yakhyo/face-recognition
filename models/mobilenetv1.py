@@ -19,12 +19,12 @@ class MobileNetV1(nn.Module):
                 in_channels=3,
                 out_channels=filters[0],
                 kernel_size=3,
-                stride=2,
+                stride=1,  # change from 2 -> 1
                 activation_layer=nn.PReLU
             ),
-            DepthWiseSeparableConv2d(filters[0],  out_channels=filters[1], stride=1),
-            # DepthWiseSeparableConv2d(filters[1], out_channels=filters[2], stride=2),
-            DepthWiseSeparableConv2d(filters[1], out_channels=filters[2], stride=1),
+            DepthWiseSeparableConv2d(filters[0], out_channels=filters[1], stride=1),
+            DepthWiseSeparableConv2d(filters[1], out_channels=filters[2], stride=2),
+            DepthWiseSeparableConv2d(filters[2], out_channels=filters[2], stride=1),
             DepthWiseSeparableConv2d(filters[2], out_channels=filters[3], stride=2),
             DepthWiseSeparableConv2d(filters[3], out_channels=filters[3], stride=1),  # (5) P / 8 -> 640 / 8 = 80
         )
@@ -41,8 +41,6 @@ class MobileNetV1(nn.Module):
             DepthWiseSeparableConv2d(filters[5], out_channels=filters[5], stride=1),  # (13) P / 32 -> 640 / 32 = 20
         )
 
-        # self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        # self.fc = nn.Linear(filters[5], num_classes)
         self.output_layer = GDC(filters[5], embedding_dim=embedding_dim)
 
         # weight initialization
