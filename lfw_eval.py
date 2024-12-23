@@ -2,12 +2,11 @@ import os
 import numpy as np
 from PIL import Image
 
-
 import torch
 from torchvision import transforms
 
-
-from models import mobilefacenet
+from models.mobilenetv1 import MobileNetV1
+from models.mobilenetv2 import MobileNetV2
 from models.sphereface import sphere20, sphere36, sphere64
 
 
@@ -108,10 +107,13 @@ def eval(model, model_path=None, device=None):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Load model
-    model.load_state_dict(torch.load(model_path))
+    if model_path is not None:
+        ckpt = torch.load(model_path, map_location=device)
+        print("Best epoch:", ckpt['epoch'])
+        model.load_state_dict(ckpt['model'])
     model.to(device).eval()
 
-    root = 'data/val/lfw_112x112/'
+    root = 'data/val'
     with open('data/val/lfw_ann.txt') as f:
         pair_lines = f.readlines()[1:]
 
@@ -119,18 +121,12 @@ def eval(model, model_path=None, device=None):
     predicts = []
     with torch.no_grad():
         for line in pair_lines:
-            parts = line.strip().split('\t')
+            parts = line.strip().split()
 
-            if len(parts) == 3:  # Same person
-                is_same = 1
-                name1, index1, index2 = parts[0], parts[1], parts[2]
-                img1_path = os.path.join(root, name1, f"{name1}_{int(index1):04d}.bmp")
-                img2_path = os.path.join(root, name1, f"{name1}_{int(index2):04d}.bmp")
-            elif len(parts) == 4:  # Different persons
-                is_same = 0
-                name1, index1, name2, index2 = parts
-                img1_path = os.path.join(root, name1, f"{name1}_{int(index1):04d}.bmp")
-                img2_path = os.path.join(root, name2, f"{name2}_{int(index2):04d}.bmp")
+            if len(parts) == 3:
+                is_same, path1, path2 = parts[0], parts[1], parts[2]
+                img1_path = os.path.join(root, path1)
+                img2_path = os.path.join(root, path2)
             else:
                 print(f"Skipping invalid line: {line.strip()}")
                 continue
@@ -173,5 +169,8 @@ def eval(model, model_path=None, device=None):
 
 
 if __name__ == '__main__':
-    _, result = eval(sphere20(512).to('cuda'), model_path='checkpoint/sphere20_30_checkpoint.pth')
-    np.savetxt("result.txt", result, '%s')
+    _, result = eval(sphere20(512).to('cuda'), model_path='weights/sphere20_MCP_last.ckpt')
+    _, result = eval(sphere36(512).to('cuda'), model_path='weights/sphere36_MCP_last.ckpt')
+    _, result = eval(MobileNetV2(512).to('cuda'), model_path='weights/mobile_MCP_last.ckpt')
+
+    # np.savetxt("result.txt", result, '%s')

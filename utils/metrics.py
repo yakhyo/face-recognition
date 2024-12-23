@@ -31,7 +31,7 @@ class MarginCosineProduct(nn.Module):
 
 
 # modified from https://github.com/MuggleWang/CosFace_pytorch/blob/master/layer.py
-class SphereFace(nn.Module):
+class AngleLinear(nn.Module):
     def __init__(self, in_features, out_features, m=4):
         super().__init__()
         self.in_features = in_features
@@ -80,47 +80,3 @@ class SphereFace(nn.Module):
 
     def __repr__(self):
         return f'{self.__class__.__name__}(in_features={self.in_features}, out_features={self.out_features}, m={self.m})'
-
-
-# modified from https://github.com/ronghuaiyang/arcface-pytorch/blob/master/models/metrics.py
-class ArcFace(nn.Module):
-    """ Reference: <Additive Angular Margin Loss for Deep Face Recognition>
-    """
-
-    def __init__(self, in_features, out_features, s=30.0, m=0.50, easy_margin=False):
-        super().__init__()
-        self.in_features = in_features
-        self.out_features = out_features
-        self.s = s
-        self.m = m
-        self.weight = nn.Parameter(torch.FloatTensor(out_features, in_features))
-        nn.init.xavier_uniform_(self.weight)
-
-        self.easy_margin = easy_margin
-        self.cos_m = math.cos(m)
-        self.sin_m = math.sin(m)
-        self.th = math.cos(math.pi - m)
-        self.mm = math.sin(math.pi - m) * m
-
-    def forward(self, embeddings, label):
-        # Cosine(theta) & phi(theta)
-        cosine = F.linear(F.normalize(embeddings), F.normalize(self.weight))
-        sine = torch.sqrt((1.0 - torch.pow(cosine, 2)).clamp(0, 1))
-        phi = cosine * self.cos_m - sine * self.sin_m
-
-        if self.easy_margin:
-            phi = torch.where(cosine > 0, phi, cosine)
-        else:
-            phi = torch.where(cosine > self.th, phi, cosine - self.mm)
-
-        # One-hot encode labels
-        one_hot = F.one_hot(label.long(), num_classes=self.out_features)
-
-        # Combine phi and cosine
-        output = one_hot * phi + (1.0 - one_hot) * cosine
-        output *= self.s
-
-        return output
-
-    def __repr__(self):
-        return (f'{self.__class__.__name__}(in_features={self.in_features}, out_features={self.out_features}, s={self.s}, m={self.m})')
