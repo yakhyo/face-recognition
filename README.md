@@ -76,6 +76,25 @@ To evaluate, please modify model, weights, and validation data filenames in `eva
 python evaluate.py
 ```
 
+## 📥 Pretrained Model Weights (v0.0.1)
+
+The following pretrained model weights are available for download under the release [v0.0.1](https://github.com/yakhyo/face-recognition/releases/tag/v0.0.1):
+
+| Model             | Download Link                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
+| MobileNetV1_0.25  | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv1_mcp.pth)       |
+| MobileNetV2       | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv2_mcp.pth)       |
+| MobileNetV3_Small | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv3_large_mcp.pth) |
+| MobileNetV3_Large | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv3_small_mcp.pth) |
+| Sphere20          | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/sphere20_mcp.pth)          |
+| Sphere36          | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/sphere36_mcp.pth)          |
+
+### 🔧 Usage
+
+1. Download the model weights from the links above.
+2. Place the weights in the desired directory (e.g., `weights/`).
+3. Update your training or inference script to load the appropriate model weights.
+
 ---
 
 ## 📂 Dataset
