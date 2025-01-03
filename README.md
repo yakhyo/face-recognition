@@ -9,17 +9,16 @@
 
 ## 🔥 Updates
 
-- `2024/12/xx`: 🔥 We released the **Face-Recognition** training framework.
+- `2025/01/03`: 🔥 We released the **Face-Recognition** training framework and pretrained model weights.
 
 ---
 
-## Results
+## 📊 Results
 
 | Dataset | Backbone          | LFW (%) | CALFW (%) | CPLFW (%) | AgeDB_30 (%) | Num Params |
 | ------- | ----------------- | ------- | --------- | --------- | ------------ | ---------- |
 | MS1MV2  | Sphere20          | 99.67   | 95.61     | 88.75     | 96.58        | 24.5M      |
 | MS1MV2  | Sphere36          | 99.72   | 95.64     | 89.92     | 96.83        | 34.6M      |
-| MS1MV2  | Sphere64          |         |           |           |              |            |
 | MS1MV2  | MobileNetV1_0.25  | 98.76   | 92.02     | 82.37     | 90.02        | 0.36M      |
 | MS1MV2  | MobileNetV2       | 99.55   | 94.87     | 86.89     | 95.16        | 2.29M      |
 | MS1MV2  | MobileNetV3_Small | 99.30   | 93.77     | 85.29     | 92.79        | 1.25M      |
@@ -27,18 +26,27 @@
 
 ---
 
-## Features
+## 🚀 Features to Add
 
-- **Feature Extraction**: Extract high-dimensional embeddings for each detected face.
-- **Face Recognition**: Match faces against a database of known identities.
-- **Real-Time Processing**: Optimized for real-time performance.
-- **Pretrained Models**: Includes support for pretrained models like `MobileNetV1/V2/V3`, `Sphere20`, and `Sphere36`.
+- [ ] ONNX Export: Enable model export to ONNX format for cross-platform compatibility.
+- [ ] ONNX Inference: Implement inference using ONNX runtime for efficient deployment.
+- [ ] Combine Face-Detection and Face-Recognition: Create a pipeline integrating both detection and recognition seamlessly.
+
+## ✨ Features
+
+| Date       | Feature Description                                                                                                                                      |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2024-12-15 | 🔄 **Training Pipeline**: Introduced a simple and effective pipeline for face-recognition training with support for `DDP` and single GPU configurations. |
+| 2024-12-15 | 📚 **Pretrained Models**: Added support for `MobileNetV1/V2/V3`, `Sphere20`, and `Sphere36` models for versatile use-cases and performance tiers.        |
+| 2024-12-15 | 📂 **Dataset Downloads**: Easy access to aligned and cropped training and validation datasets via Kaggle links.                                          |
+| 2024-12-15 | 🔧 **Modular Codebase**: Fully modular and reproducible codebase for easier customization and extension.                                                 |
+| 2024-12-15 | 🌐 **Dataset Compatibility**: Supports `CASIA-WebFace`, `VGGFace2`, and `MS1MV2` datasets, pre-aligned and cropped for streamlined training.             |
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
-### Installation
+### 💻 Installation
 
 ```bash
 git clone https://github.com/yakhyo/face-recognition.git
@@ -46,55 +54,55 @@ cd face-recognition
 pip install -r requirements.txt
 ```
 
-### Training
+### 🏋️‍♂️ Training
 
-Codebase supports DDP, to run using DDP please use below example command:
+Codebase supports **DDP**, to run using **DDP** please use below example command:
 
 ```bash
 torchrun --nproc_per_node=2 main.py --root data/train/ms1m_112x112 --database MS1M --network mobilenetv1 --classifier MCP
 ```
 
-If you have a sinlge GPU then use below example command:
+If you have a single GPU then use the below example command:
 
 ```bash
 python main.py --root data/train/ms1m_112x112 --database MS1M --network mobilenetv1 --classifier MCP
 ```
 
-### Evaluate
+### 🧪 Evaluate
 
-To evaluate, please modify model, weights and validation data filenames in `lfw_eval.py`
+To evaluate, please modify model, weights, and validation data filenames in `evaluate.py`
 
 ```bash
-python lfw_eval.py
+python evaluate.py
 ```
 
 ---
 
-## Dataset
+## 📂 Dataset
 
 You can download aligned and cropped (112x112) training and validation datasets from Kaggle.
 
-### Training Data
+### 📦 Training Data
 
-- [CASIA-WebFace 112x112](https://www.kaggle.com/datasets/yakhyokhuja/webface-112x112)
-  - Identites: 10.6k
+- [CASIA-WebFace 112x112](https://www.kaggle.com/datasets/yakhyo/webface-112x112) from `opensphere`
+  - Identities: 10.6k
   - #Images: 491k
-- [VGGFace2 112x112](https://www.kaggle.com/datasets/yakhyokhuja/vggface2-112x112)
+- [VGGFace2 112x112](https://www.kaggle.com/datasets/yakhyo/vggface2-112x112) from `opensphere`
   - Identities: 8.6k
   - #Images: 3.1M
-- [MS1MV2 112x112](https://www.kaggle.com/datasets/yakhyokhuja/ms1m-arcface-dataset)
+- [MS1MV2 112x112](https://www.kaggle.com/datasets/yakhyo/ms1m-arcface-dataset) from `insightface`
   - Identities: 85.7k
   - #Images: 5.8M
 
-### Validation Data
+### 🔍 Validation Data
 
-Validation data contains AgeDB_30, CALFW, CPLFW, LFW datasets.
+Validation data contains AgeDB_30, CALFW, CPLFW, and LFW datasets.
 
-- [AgeDB_30, CALFW CPLFW, LFW 112x112](https://www.kaggle.com/datasets/yakhyokhuja/agedb-30-calfw-cplfw-lfw-aligned-112x112)
+- [AgeDB_30, CALFW, CPLFW, LFW 112x112](https://www.kaggle.com/datasets/yakhyo/agedb-30-calfw-cplfw-lfw-aligned-112x112)
 
 ---
 
-### Folder Structure
+### 🗂️ Folder Structure
 
 ```
 data/
@@ -115,6 +123,6 @@ data/
 
 ---
 
-## License
+## 📝 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

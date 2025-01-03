@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-import lfw_eval
+import evaluate
 from utils.dataset import ImageFolder
 from utils.metrics import MarginCosineProduct, AngleLinear
 from utils.general import (
@@ -385,7 +385,7 @@ def main(params):
         save_on_master(checkpoint, last_save_path)
 
         if params.local_rank == 0:
-            curr_accuracy, _ = lfw_eval.eval(model_without_ddp, device=device)
+            curr_accuracy, _ = evaluate.eval(model_without_ddp, device=device)
 
         if early_stopping(epoch, curr_accuracy):
             break

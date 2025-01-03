@@ -7,6 +7,7 @@ from torchvision import transforms
 
 from models.mobilenetv1 import MobileNetV1
 from models.mobilenetv2 import MobileNetV2
+from models.mobilenetv3 import mobilenet_v3_small, mobilenet_v3_large
 from models.sphereface import sphere20, sphere36, sphere64
 
 
@@ -108,9 +109,8 @@ def eval(model, model_path=None, device=None):
 
     # Load model
     if model_path is not None:
-        ckpt = torch.load(model_path, map_location=device)
-        print("Best epoch:", ckpt['epoch'])
-        model.load_state_dict(ckpt['model'])
+        state_dict = torch.load(model_path, map_location=device)
+        model.load_state_dict(state_dict)
     model.to(device).eval()
 
     root = 'data/val'
@@ -169,8 +169,9 @@ def eval(model, model_path=None, device=None):
 
 
 if __name__ == '__main__':
-    _, result = eval(sphere20(512).to('cuda'), model_path='weights/sphere20_MCP_last.ckpt')
-    _, result = eval(sphere36(512).to('cuda'), model_path='weights/sphere36_MCP_last.ckpt')
-    _, result = eval(MobileNetV2(512).to('cuda'), model_path='weights/mobile_MCP_last.ckpt')
-
-    # np.savetxt("result.txt", result, '%s')
+    _, result = eval(sphere20(512).to('cuda'), model_path='weights/sphere20_mcp.pth')
+    _, result = eval(sphere36(512).to('cuda'), model_path='weights/sphere36_mcp.pth')
+    _, result = eval(MobileNetV1(512).to('cuda'), model_path='weights/mobilenetv1_mcp.pth')
+    _, result = eval(MobileNetV2(512).to('cuda'), model_path='weights/mobilenetv2_mcp.pth')
+    _, result = eval(mobilenet_v3_small(512).to('cuda'), model_path='weights/mobilenetv3_small_mcp.pth')
+    _, result = eval(mobilenet_v3_large(512).to('cuda'), model_path='weights/mobilenetv3_large_mcp.pth')
