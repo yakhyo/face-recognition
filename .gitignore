@@ -1,6 +1,7 @@
 data/
 
-weights/
+weights/*.ckpt
+weights/*.pth
 
 
 # Byte-compiled / optimized / DLL files
