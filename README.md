@@ -103,13 +103,13 @@ You can download aligned and cropped (112x112) training and validation datasets 
 
 ### 📦 Training Data
 
-- [CASIA-WebFace 112x112](https://www.kaggle.com/datasets/yakhyo/webface-112x112) from `opensphere`
+- [CASIA-WebFace 112x112](https://www.kaggle.com/datasets/yakhyokhuja/webface-112x112) from `opensphere`
   - Identities: 10.6k
   - #Images: 491k
-- [VGGFace2 112x112](https://www.kaggle.com/datasets/yakhyo/vggface2-112x112) from `opensphere`
+- [VGGFace2 112x112](https://www.kaggle.com/datasets/yakhyokhuja/vggface2-112x112) from `opensphere`
   - Identities: 8.6k
   - #Images: 3.1M
-- [MS1MV2 112x112](https://www.kaggle.com/datasets/yakhyo/ms1m-arcface-dataset) from `insightface`
+- [MS1MV2 112x112](https://www.kaggle.com/datasets/yakhyokhuja/ms1m-arcface-dataset) from `insightface`
   - Identities: 85.7k
   - #Images: 5.8M
 
