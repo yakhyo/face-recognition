@@ -117,7 +117,7 @@ You can download aligned and cropped (112x112) training and validation datasets 
 
 Validation data contains AgeDB_30, CALFW, CPLFW, and LFW datasets.
 
-- [AgeDB_30, CALFW, CPLFW, LFW 112x112](https://www.kaggle.com/datasets/yakhyo/agedb-30-calfw-cplfw-lfw-aligned-112x112)
+- [AgeDB_30, CALFW, CPLFW, LFW 112x112](https://www.kaggle.com/datasets/yakhyokhuja/agedb-30-calfw-cplfw-lfw-aligned-112x112)
 
 ---
 
