@@ -59,13 +59,13 @@ pip install -r requirements.txt
 Codebase supports **DDP**, to run using **DDP** please use below example command:
 
 ```bash
-torchrun --nproc_per_node=2 main.py --root data/train/ms1m_112x112 --database MS1M --network mobilenetv1 --classifier MCP
+torchrun --nproc_per_node=2 train.py --root data/train/ms1m_112x112 --database MS1M --network mobilenetv1 --classifier MCP
 ```
 
 If you have a single GPU then use the below example command:
 
 ```bash
-python main.py --root data/train/ms1m_112x112 --database MS1M --network mobilenetv1 --classifier MCP
+python train.py --root data/train/ms1m_112x112 --database MS1M --network mobilenetv1 --classifier MCP
 ```
 
 ### 🧪 Evaluate
@@ -96,6 +96,14 @@ The following pretrained model weights are available for download under the rele
 3. Update your training or inference script to load the appropriate model weights.
 
 ---
+
+## ONNX Export
+
+Run following command to export to ONNX:
+
+```bash
+python onnx_export.py -w [path/to/weight/file] -n [network/architecture/name] --dynamic[Optional]
+```
 
 ## 📂 Dataset
 
