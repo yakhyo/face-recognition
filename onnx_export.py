@@ -43,7 +43,7 @@ def parse_arguments():
     parser.add_argument(
         '-n', '--network',
         type=str,
-        default='mobilenetv1',
+        default='mobilenetv2',
         choices=[
             'mobilenetv1', 'mobilenetv1_0.25', 'mobilenetv1_0.50',
             'mobilenetv2', 'resnet50', 'resnet34', 'resnet18'
@@ -106,7 +106,7 @@ def onnx_export(params):
         x,                    # Model input
         onnx_model,           # Output file path
         export_params=True,    # Store the trained parameter weights inside the model file
-        opset_version=11,      # ONNX version to export the model to
+        opset_version=16,      # ONNX version to export the model to
         do_constant_folding=True,  # Whether to execute constant folding for optimization
         input_names=['input'],     # Model's input names
         output_names=['output'],   # Model's output names
