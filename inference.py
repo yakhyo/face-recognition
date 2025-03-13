@@ -12,8 +12,7 @@ from models.mobilenetv2 import MobileNetV2
 from models.mobilenetv3 import mobilenet_v3_small, mobilenet_v3_large
 from models.sphereface import sphere20, sphere36, sphere64
 
-
-retinaface = RetinaFace(model="retinaface_mnet_v2", conf_thresh=0.45)
+from utils.general import compute_similarity
 
 
 def get_network(model_name: str) -> torch.nn.Module:
@@ -40,7 +39,6 @@ def get_network(model_name: str) -> torch.nn.Module:
         raise ValueError(f"Unsupported network '{model_name}'! Available options: {list(models.keys())}")
 
     return models[model_name]
-
 
 
 def load_model(model_name: str, model_path: str, device: torch.device = None) -> torch.nn.Module:
@@ -85,15 +83,6 @@ def extract_features(model, device, img_path: str) -> np.ndarray:
     return features
 
 
-def compute_similarity(feat1: np.ndarray, feat2: np.ndarray) -> np.float32:
-    """
-    Computes cosine similarity between two feature vectors.
-    """
-    feat1, feat2 = feat1.ravel(), feat2.ravel()
-    similarity = np.dot(feat1, feat2) / (np.linalg.norm(feat1) * np.linalg.norm(feat2))
-    return similarity
-
-
 def compare_faces(model, device, img1_path: str, img2_path: str, threshold: float = 0.35) -> tuple[float, bool]:
     """
     Compares two face images and determines if they belong to the same person.
@@ -114,7 +103,7 @@ if __name__ == "__main__":
     threshold = 0.35
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     # Load model
     model = load_model(model_name, model_path, device)
 
