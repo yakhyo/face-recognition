@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 from typing import Callable, List, Optional, Type
-from models.common import Conv2dNormActivation
+
+from utils.layers import Conv2dNormActivation
 
 __all__ = ["sphere20", "sphere36", "sphere64"]
 

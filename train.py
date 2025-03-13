@@ -20,10 +20,15 @@ from utils.general import (
     LOGGER,
 )
 
-from models.mobilenetv1 import MobileNetV1
-from models.mobilenetv2 import MobileNetV2
-from models.mobilenetv3 import mobilenet_v3_small, mobilenet_v3_large
-from models.sphereface import sphere20, sphere36, sphere64
+from models import (
+    sphere20,
+    sphere36,
+    sphere64,
+    MobileNetV1,
+    MobileNetV2,
+    mobilenet_v3_small,
+    mobilenet_v3_large,
+)
 
 
 def parse_arguments():
@@ -49,8 +54,10 @@ def parse_arguments():
         '--network',
         type=str,
         default='sphere20',
-        choices=['sphere20', 'sphere36', 'sphere64', 'mobilenetv1',
-                 'mobilenetv2', 'mobilenetv3_small', 'mobilenetv3_large'],
+        choices=[
+            'sphere20', 'sphere36', 'sphere64', 'mobilenetv1',
+            'mobilenetv2', 'mobilenetv3_small', 'mobilenetv3_large'
+        ],
         help='Network architecture to use. Options: sphere20, sphere36, sphere64, mobile.'
     )
     parser.add_argument(
