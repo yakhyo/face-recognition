@@ -100,7 +100,7 @@ The following pretrained model weights are available for download under the rele
 Run following command to export to ONNX:
 
 ```bash
-python onnx_export.py -w [path/to/weight/file] -n [network/architecture/name] --dynamic[Optional]
+python -m scripts.onnx_export -w [path/to/weight/file] -n [network/architecture/name] --dynamic[Optional]
 ```
 
 ## ONNX Inference

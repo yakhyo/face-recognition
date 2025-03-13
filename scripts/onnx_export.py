@@ -2,11 +2,15 @@ import os
 import argparse
 import torch
 
-from models.mobilenetv1 import MobileNetV1
-from models.mobilenetv2 import MobileNetV2
-from models.mobilenetv3 import mobilenet_v3_small, mobilenet_v3_large
-
-from models.sphereface import sphere20, sphere36, sphere64
+from models import (
+    sphere20,
+    sphere36,
+    sphere64,
+    MobileNetV1,
+    MobileNetV2,
+    mobilenet_v3_small,
+    mobilenet_v3_large,
+)
 
 
 def get_network(params):
