@@ -4,7 +4,7 @@ from typing import Any, Callable, List,  Sequence
 import torch
 from torch import nn, Tensor
 
-from models.common import _make_divisible, Conv2dNormActivation, SqueezeExcitation as SElayer, GDC
+from utils.layers import _make_divisible, Conv2dNormActivation, SqueezeExcitation as SElayer, GDC
 
 
 __all__ = ["mobilenet_v3_large", "mobilenet_v3_small"]

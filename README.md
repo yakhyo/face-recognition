@@ -9,7 +9,9 @@
 
 ## 🔥 Updates
 
-- `2025/01/03`: 🔥 We released the **Face-Recognition** training framework and pretrained model weights.
+- `2025/03/13`: Face Detection added in `onnx_inference.py`.
+- `2025/03/13`: ONNX Export and Inference has been added.
+- `2025/01/03`: We released the **Face-Recognition** training framework and pretrained model weights.
 
 ---
 
@@ -25,12 +27,6 @@
 | MS1MV2  | MobileNetV3_Large | 99.53   | 94.56     | 86.79     | 95.13        | 3.52M      |
 
 ---
-
-## 🚀 Features to Add
-
-- [ ] ONNX Export: Enable model export to ONNX format for cross-platform compatibility.
-- [ ] ONNX Inference: Implement inference using ONNX runtime for efficient deployment.
-- [ ] Combine Face-Detection and Face-Recognition: Create a pipeline integrating both detection and recognition seamlessly.
 
 ## ✨ Features
 
@@ -68,6 +64,8 @@ If you have a single GPU then use the below example command:
 python train.py --root data/train/ms1m_112x112 --database MS1M --network mobilenetv1 --classifier MCP
 ```
 
+---
+
 ### 🧪 Evaluate
 
 To evaluate, please modify model, weights, and validation data filenames in `evaluate.py`
@@ -104,6 +102,20 @@ Run following command to export to ONNX:
 ```bash
 python onnx_export.py -w [path/to/weight/file] -n [network/architecture/name] --dynamic[Optional]
 ```
+
+## ONNX Inference
+
+Run `onnx_inference.py` to use ONNXRuntime. This inference calculates the similarity between two face images.
+
+```bash
+python onnx_inference.py
+```
+
+## PyTorch Inference
+
+Run `inference.py` for PyTorch model inference. This inference calculates the similarity between two face images.
+
+---
 
 ## 📂 Dataset
 

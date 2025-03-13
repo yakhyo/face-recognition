@@ -1,7 +1,8 @@
 import torch
 from torch import nn, Tensor
-from models.common import Conv2dNormActivation, _make_divisible, GDC
 from typing import Callable, List, Optional, Type
+
+from utils.layers import Conv2dNormActivation, _make_divisible, GDC
 
 
 __all__ = ["MobileNetV2"]

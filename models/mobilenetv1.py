@@ -2,7 +2,7 @@ import torch
 from torch import nn, Tensor
 from typing import List, Optional, Callable
 
-from models.common import _make_divisible, Conv2dNormActivation, DepthWiseSeparableConv2d, GDC
+from utils.layers import _make_divisible, Conv2dNormActivation, DepthWiseSeparableConv2d, GDC
 
 __all__ = ["mobilenet_v1_025", "mobilenet_v1_050", "mobilenet_v1"]
 

@@ -1,3 +1,7 @@
+# Copyright 2025 Yakhyokhuja Valikhujaev
+# Author: Yakhyokhuja Valikhujaev
+# GitHub: https://github.com/yakhyo
+
 import numpy as np
 from PIL import Image
 
@@ -6,13 +10,17 @@ from torchvision import transforms
 
 from uniface import RetinaFace
 
-from models.mobilenetv1 import MobileNetV1
-from models.mobilenetv2 import MobileNetV2
+from models import (
+    sphere20,
+    sphere36,
+    sphere64,
+    MobileNetV1,
+    MobileNetV2,
+    mobilenet_v3_small,
+    mobilenet_v3_large,
+)
 
-from models.mobilenetv3 import mobilenet_v3_small, mobilenet_v3_large
-from models.sphereface import sphere20, sphere36, sphere64
-
-from utils.general import compute_similarity
+from utils.face_utils import compute_similarity
 
 
 def get_network(model_name: str) -> torch.nn.Module:
