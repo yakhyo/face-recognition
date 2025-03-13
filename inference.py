@@ -116,7 +116,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     # Load model
-    model, device = load_model(model_name, model_path)
+    model = load_model(model_name, model_path, device)
 
     # Compare faces
     similarity, is_same = compare_faces(
