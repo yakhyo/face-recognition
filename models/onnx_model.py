@@ -17,7 +17,7 @@ class ONNXFaceEngine(object):
 
     def __init__(self, model_path: str = None, session: ort.InferenceSession = None):
         """
-        Initializes the ArcFace ONNX model for inference.
+        Initializes the ONNXFaceEngine model for inference.
 
         Args:
             model_path (str): Path to the ONNX model file.
