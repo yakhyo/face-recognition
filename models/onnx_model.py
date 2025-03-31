@@ -80,6 +80,6 @@ class ONNXFaceEngine(object):
             np.ndarray: 512-dimensional face embedding.
         """
         aligned_face = face_alignment(image, landmarks)  # Use your function for alignment
-        blob = self.preprocess(image)  # Convert to blob
+        blob = self.preprocess(aligned_face)  # Convert to blob
         embedding = self.session.run(self.output_names, {self.input_name: blob})[0]
         return embedding  # Return the 512-D feature vector
