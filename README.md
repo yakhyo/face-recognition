@@ -82,8 +82,8 @@ The following pretrained model weights are available for download under the rele
 | ----------------- | --------------------------------------------------------------------------------------------------------- |
 | MobileNetV1_0.25  | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv1_mcp.pth)       |
 | MobileNetV2       | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv2_mcp.pth)       |
-| MobileNetV3_Small | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv3_large_mcp.pth) |
-| MobileNetV3_Large | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv3_small_mcp.pth) |
+| MobileNetV3_Small | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv3_small_mcp.pth) |
+| MobileNetV3_Large | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv3_large_mcp.pth) |
 | Sphere20          | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/sphere20_mcp.pth)          |
 | Sphere36          | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/sphere36_mcp.pth)          |
 
