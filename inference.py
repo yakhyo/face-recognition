@@ -8,8 +8,6 @@ from PIL import Image
 import torch
 from torchvision import transforms
 
-from uniface import RetinaFace
-
 from models import (
     sphere20,
     sphere36,

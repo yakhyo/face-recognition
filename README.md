@@ -7,7 +7,7 @@
 
 ---
 
-## 🔥 Updates
+## Updates
 
 - `2025/03/13`: Face Detection added in `onnx_inference.py`.
 - `2025/03/13`: ONNX Export and Inference has been added.
@@ -15,7 +15,7 @@
 
 ---
 
-## 📊 Results
+## Results
 
 | Dataset | Backbone          | LFW (%) | CALFW (%) | CPLFW (%) | AgeDB_30 (%) | Num Params |
 | ------- | ----------------- | ------- | --------- | --------- | ------------ | ---------- |
@@ -28,21 +28,21 @@
 
 ---
 
-## ✨ Features
+## Features
 
-| Date       | Feature Description                                                                                                                                      |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2024-12-15 | 🔄 **Training Pipeline**: Introduced a simple and effective pipeline for face-recognition training with support for `DDP` and single GPU configurations. |
-| 2024-12-15 | 📚 **Pretrained Models**: Added support for `MobileNetV1/V2/V3`, `Sphere20`, and `Sphere36` models for versatile use-cases and performance tiers.        |
-| 2024-12-15 | 📂 **Dataset Downloads**: Easy access to aligned and cropped training and validation datasets via Kaggle links.                                          |
-| 2024-12-15 | 🔧 **Modular Codebase**: Fully modular and reproducible codebase for easier customization and extension.                                                 |
-| 2024-12-15 | 🌐 **Dataset Compatibility**: Supports `CASIA-WebFace`, `VGGFace2`, and `MS1MV2` datasets, pre-aligned and cropped for streamlined training.             |
+| Date       | Feature Description                                                                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2024-12-15 | **Training Pipeline**: Introduced a simple and effective pipeline for face-recognition training with support for `DDP` and single GPU configurations. |
+| 2024-12-15 | **Pretrained Models**: Added support for `MobileNetV1/V2/V3`, `Sphere20`, and `Sphere36` models for versatile use-cases and performance tiers.        |
+| 2024-12-15 | **Dataset Downloads**: Easy access to aligned and cropped training and validation datasets via Kaggle links.                                          |
+| 2024-12-15 | **Modular Codebase**: Fully modular and reproducible codebase for easier customization and extension.                                                 |
+| 2024-12-15 | **Dataset Compatibility**: Supports `CASIA-WebFace`, `VGGFace2`, and `MS1MV2` datasets, pre-aligned and cropped for streamlined training.             |
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### 💻 Installation
+### Installation
 
 ```bash
 git clone https://github.com/yakhyo/face-recognition.git
@@ -50,7 +50,7 @@ cd face-recognition
 pip install -r requirements.txt
 ```
 
-### 🏋️‍♂️ Training
+### Training
 
 Codebase supports **DDP**, to run using **DDP** please use below example command:
 
@@ -66,7 +66,7 @@ python train.py --root data/train/ms1m_112x112 --database MS1M --network mobilen
 
 ---
 
-### 🧪 Evaluate
+### Evaluate
 
 To evaluate, please modify model, weights, and validation data filenames in `evaluate.py`
 
@@ -74,7 +74,7 @@ To evaluate, please modify model, weights, and validation data filenames in `eva
 python evaluate.py
 ```
 
-## 📥 Pretrained Model Weights (v0.0.1)
+## Pretrained Model Weights (v0.0.1)
 
 The following pretrained model weights are available for download under the release [v0.0.1](https://github.com/yakhyo/face-recognition/releases/tag/v0.0.1):
 
@@ -87,7 +87,7 @@ The following pretrained model weights are available for download under the rele
 | Sphere20          | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/sphere20_mcp.pth)          |
 | Sphere36          | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/sphere36_mcp.pth)          |
 
-### 🔧 Usage
+### Usage
 
 1. Download the model weights from the links above.
 2. Place the weights in the desired directory (e.g., `weights/`).
@@ -100,7 +100,7 @@ The following pretrained model weights are available for download under the rele
 Run following command to export to ONNX:
 
 ```bash
-python -m scripts.onnx_export -w [path/to/weight/file] -n [network/architecture/name] --dynamic[Optional]
+python onnx_export.py -w [path/to/weight/file] -n [network/architecture/name] --dynamic[Optional]
 ```
 
 ## ONNX Inference
@@ -117,11 +117,11 @@ Run `inference.py` for PyTorch model inference. This inference calculates the si
 
 ---
 
-## 📂 Dataset
+## Dataset
 
 You can download aligned and cropped (112x112) training and validation datasets from Kaggle.
 
-### 📦 Training Data
+### Training Data
 
 - [CASIA-WebFace 112x112](https://www.kaggle.com/datasets/yakhyokhuja/webface-112x112) from `opensphere`
   - Identities: 10.6k
@@ -133,7 +133,7 @@ You can download aligned and cropped (112x112) training and validation datasets 
   - Identities: 85.7k
   - #Images: 5.8M
 
-### 🔍 Validation Data
+### Validation Data
 
 Validation data contains AgeDB_30, CALFW, CPLFW, and LFW datasets.
 
@@ -141,7 +141,7 @@ Validation data contains AgeDB_30, CALFW, CPLFW, and LFW datasets.
 
 ---
 
-### 🗂️ Folder Structure
+### Folder Structure
 
 ```
 data/
@@ -162,6 +162,6 @@ data/
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

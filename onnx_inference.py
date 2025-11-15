@@ -51,11 +51,11 @@ if __name__ == "__main__":
     img1 = cv2.imread("assets/b_01.jpg")
     img2 = cv2.imread("assets/b_02.jpg")
 
-    boxes, landmarks = uniface_inference.detect(img1)  # Detect faces in the image
-    landmarks1 = landmarks[0]  # Get landmarks for the first face
+    detections1 = uniface_inference.detect(img1)  # Detect faces in the image
+    landmarks1 = np.array(detections1[0]['landmarks'], dtype=np.float32)  # Get landmarks for the first face
 
-    boxes, landmarks = uniface_inference.detect(img2)  # Detect faces in the image
-    landmarks2 = landmarks[0]  # Get landmarks for the second face
+    detections2 = uniface_inference.detect(img2)  # Detect faces in the image
+    landmarks2 = np.array(detections2[0]['landmarks'], dtype=np.float32)  # Get landmarks for the second face
 
     # Compare two face images
     similarity, is_same = compare_faces(face_recognizer, img1, landmarks1, img2, landmarks2, threshold=0.30)
