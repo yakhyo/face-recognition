@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 
-from utils.face_utils import compute_similarity, face_alignment
+from utils.face_utils import face_alignment
 
 
 class ONNXFaceEngine(object):
