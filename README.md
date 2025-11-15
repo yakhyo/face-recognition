@@ -9,9 +9,9 @@
 
 ## Updates
 
-- `2025/03/13`: Face Detection added in `onnx_inference.py`.
-- `2025/03/13`: ONNX Export and Inference has been added.
-- `2025/01/03`: We released the **Face-Recognition** training framework and pretrained model weights.
+- `2025/03/13`: Face Detection added in `onnx_inference.py`. <!-- Added face detection capabilities to ONNX inference pipeline -->
+- `2025/03/13`: ONNX Export and Inference has been added. <!-- Introduced ONNX model export functionality and inference support -->
+- `2025/01/03`: We released the **Face-Recognition** training framework and pretrained model weights. <!-- Initial release with training framework and PyTorch weights -->
 
 ---
 
@@ -80,7 +80,7 @@ The following pretrained model weights are available for download under the rele
 
 | Model             | Download Link                                                                                             |
 | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| MobileNetV1_0.25  | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv1_mcp.pth)       |
+| MobileNetV1_0.25  | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv1_0.25_mcp.pth)       |
 | MobileNetV2       | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv2_mcp.pth)       |
 | MobileNetV3_Small | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv3_small_mcp.pth) |
 | MobileNetV3_Large | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv3_large_mcp.pth) |
@@ -92,6 +92,28 @@ The following pretrained model weights are available for download under the rele
 1. Download the model weights from the links above.
 2. Place the weights in the desired directory (e.g., `weights/`).
 3. Update your training or inference script to load the appropriate model weights.
+
+---
+
+## ONNX Model Weights (v0.0.1)
+
+The following ONNX model weights are available for download under the release [v0.0.1](https://github.com/yakhyo/face-recognition/releases/tag/v0.0.1):
+
+| Model             | Download Link                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
+| MobileNetV1_0.25  | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv1_0.25.onnx)       |
+| MobileNetV2       | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv2.onnx)       |
+| MobileNetV3_Small | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv3_small.onnx) |
+| MobileNetV3_Large | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/mobilenetv3_large.onnx) |
+| Sphere20          | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/sphere20.onnx)          |
+| Sphere36          | [Download](https://github.com/yakhyo/face-recognition/releases/download/v0.0.1/sphere36.onnx)          |
+
+### ONNX Usage
+
+1. Download the ONNX model weights from the links above.
+2. Use the ONNX models directly for inference with ONNXRuntime.
+3. These models are optimized for production deployment and cross-platform compatibility.
+4. Run `python onnx_inference.py` to test ONNX model inference.
 
 ---
 
