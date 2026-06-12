@@ -95,33 +95,24 @@ class ArcFace(nn.Module):
         self.weight = nn.Parameter(torch.FloatTensor(out_features, in_features))
         nn.init.xavier_uniform_(self.weight)
 
-        # Pre-calculated values for margin and threshold
-        self.cos_m = math.cos(m)
-        self.sin_m = math.sin(m)
-        self.th = math.cos(math.pi - m)
-        self.mm = math.sin(math.pi - m) * m
-
     def forward(self, embeddings, label):
         # --------------------------- cos(theta) & phi(theta) ---------------------------
-        # Normalize features and weights
-        cosine = F.linear(F.normalize(embeddings), F.normalize(self.weight))
+        # Normalize features and weights to calculate cosine of angle (cos(theta))
+        cosine = F.linear(embeddings, F.normalize(self.weight))
 
-        # Calculate sine and phi (cos(theta + m))
-        sine = torch.sqrt((1.0 - torch.pow(cosine, 2)).clamp(0, 1))
-        phi = cosine * self.cos_m - sine * self.sin_m
+        # Clip for numerical stability and convert to angle (theta)
+        cos_theta = cosine.clamp(-1 + 1e-7, 1 - 1e-7)
+        theta = torch.acos(cos_theta)
 
-        # --------------------------- Prepare one-hot mask ---------------------------
-        one_hot = torch.zeros_like(cosine)
-        one_hot.scatter_(1, label.view(-1, 1).long(), 1)
+        # Add margin (m) to the angle for the target class
+        # One-hot encoding of target labels and margin tensor M
+        one_hot = F.one_hot(label.long(), num_classes=self.out_features)
+        M = one_hot * self.m
+        theta = theta + M  # Add margin only to target angle
 
-        # --------------------------- Apply margin to target class ---------------------------
-
-        # Hard samples condition: cosine < self.th (i.e., theta + m > pi)
-        # For hard samples, use cos(theta) - mm instead of phi
-        final_phi = torch.where(cosine > self.th, phi, cosine - self.mm)
-
-        # Apply final_phi only to the target class, keep cosine for non-target classes
-        output = (one_hot * final_phi) + ((1.0 - one_hot) * cosine)
+        # Convert back to cosine (cos(theta + m) for target class)
+        # Non-target classes use cos(theta) implicitly
+        output = torch.cos(theta)
 
         # Scale the output
         output *= self.s

@@ -46,7 +46,7 @@ class ImageFolder(Dataset):
             for root, _, file_names in os.walk(class_dir, followlinks=True):
                 for file_name in sorted(file_names):
                     path = os.path.join(root, file_name)
-                    if os.path.splitext(path)[1].lower() in {".jpg", ".jpeg", ".png", ".pgm"}:
+                    if os.path.splitext(path)[1].lower() in {".jpg", ".jpeg", ".png"}:
                         instances.append((path, class_index))
 
         return instances
