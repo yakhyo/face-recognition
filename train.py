@@ -46,7 +46,7 @@ def parse_arguments():
         '--database',
         type=str,
         default='WebFace',
-        choices=['WebFace', 'VggFace2', "MS1M", 'AttFace'],
+        choices=['WebFace', 'VggFace2', "MS1M", 'AttFace', 'LFW'],
         help='Database to use for training. Options: WebFace, VggFace2.'
     )
 
@@ -256,6 +256,9 @@ def main(params):
         },
         'AttFace': {
             'num_classes': 40,
+        },
+        'LFW': {
+            'num_classes': 5749,
         }
     }
     if params.database not in db_config:
