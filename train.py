@@ -29,6 +29,7 @@ from models import (
     mobilenet_v3_small,
     mobilenet_v3_large,
     resnet18,
+    resnet50,
 )
 
 
@@ -57,7 +58,7 @@ def parse_arguments():
         default='sphere20',
         choices=[
             'sphere20', 'sphere36', 'sphere64', 'mobilenetv1',
-            'mobilenetv2', 'mobilenetv3_small', 'mobilenetv3_large', 'resnet18'
+            'mobilenetv2', 'mobilenetv3_small', 'mobilenetv3_large', 'resnet18', 'resnet50'
         ],
         help='Network architecture to use. Options: sphere20, sphere36, sphere64, mobile.'
     )
@@ -280,6 +281,8 @@ def main(params):
         model = mobilenet_v3_large(embedding_dim=512)
     elif params.network == "resnet18":
         model = resnet18(embedding_dim=512)
+    elif params.network == "resnet50":
+        model = resnet50(embedding_dim=512)
     else:
         raise ValueError("Unsupported network!")
 

@@ -69,6 +69,11 @@ If you have a single GPU then use the below example command:
 python train.py --root data/train/ms1m_112x112 --database MS1M --network mobilenetv1 --classifier MCP
 ```
 
+Resume training with different learning rate, batch_size, number of workers...
+```bash
+python train.py --root data/lfw-aligned-112x112 --database LFW --network resnet18 --classifier ARC --num-workers 2 --lr 0.001 --batch-size 512 --checkpoint weights
+```
+
 ---
 
 ### Evaluate

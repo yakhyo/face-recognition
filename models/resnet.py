@@ -1,16 +1,16 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models import resnet18 as _resnet18, ResNet18_Weights
+from torchvision.models import resnet18 as _resnet18, ResNet18_Weights, resnet50 as _resnet50, ResNet50_Weights
 
-__all__ = ["resnet18"]
+__all__ = ["resnet18", "resnet50"]
 
 
-class ResNet18FeatureExtractor(nn.Module):
-    def __init__(self, embedding_dim=512):
+class ResNetFeatureExtractor(nn.Module):
+    def __init__(self, resnet_factory, weights, embedding_dim=512):
         super().__init__()
 
-        # Load ResNet-18 with ImageNet weights
-        model = _resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+        # Load ResNet with ImageNet weights
+        model = resnet_factory(weights=weights)
 
         # Get the number of input features of the final fully connected layer
         num_ftrs = model.fc.in_features
@@ -22,7 +22,7 @@ class ResNet18FeatureExtractor(nn.Module):
 
     def forward(self, x):
         x = self.feature_extractor(x)
-        x = F.normalize(x)  # L2 Normalization is applied here, aligning with user's example
+        x = F.normalize(x)  # L2 Normalization is applied here
         return x
 
 
@@ -30,4 +30,11 @@ def resnet18(embedding_dim=512, **kwargs):
     """
     ResNet-18 feature extractor with ImageNet pre-trained weights and L2 feature normalization.
     """
-    return ResNet18FeatureExtractor(embedding_dim)
+    return ResNetFeatureExtractor(_resnet18, ResNet18_Weights.IMAGENET1K_V1, embedding_dim)
+
+
+def resnet50(embedding_dim=512, **kwargs):
+    """
+    ResNet-50 feature extractor with ImageNet pre-trained weights and L2 feature normalization.
+    """
+    return ResNetFeatureExtractor(_resnet50, ResNet50_Weights.IMAGENET1K_V1, embedding_dim)
