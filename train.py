@@ -8,7 +8,7 @@ from torchvision import transforms
 
 import evaluate
 from utils.dataset import ImageFolder
-from utils.metrics import MarginCosineProduct, AngleLinear
+from utils.metrics import MarginCosineProduct, AngleLinear, ArcFace
 from utils.general import (
     setup_seed,
     reduce_tensor,
@@ -28,6 +28,7 @@ from models import (
     MobileNetV2,
     mobilenet_v3_small,
     mobilenet_v3_large,
+    resnet18,
 )
 
 
@@ -45,7 +46,7 @@ def parse_arguments():
         '--database',
         type=str,
         default='WebFace',
-        choices=['WebFace', 'VggFace2', "MS1M"],
+        choices=['WebFace', 'VggFace2', "MS1M", 'AttFace'],
         help='Database to use for training. Options: WebFace, VggFace2.'
     )
 
@@ -56,7 +57,7 @@ def parse_arguments():
         default='sphere20',
         choices=[
             'sphere20', 'sphere36', 'sphere64', 'mobilenetv1',
-            'mobilenetv2', 'mobilenetv3_small', 'mobilenetv3_large'
+            'mobilenetv2', 'mobilenetv3_small', 'mobilenetv3_large', 'resnet18'
         ],
         help='Network architecture to use. Options: sphere20, sphere36, sphere64, mobile.'
     )
@@ -134,6 +135,7 @@ def get_classification_head(classifier, embedding_dim, num_classes):
     classifiers = {
         'MCP': MarginCosineProduct(embedding_dim, num_classes),
         'AL': AngleLinear(embedding_dim, num_classes),
+        'ARC': ArcFace(embedding_dim, num_classes),
         'L': torch.nn.Linear(embedding_dim, num_classes, bias=False)
     }
 
@@ -251,6 +253,9 @@ def main(params):
         },
         'MS1M': {
             'num_classes': 85742,
+        },
+        'AttFace': {
+            'num_classes': 40,
         }
     }
     if params.database not in db_config:
@@ -273,6 +278,8 @@ def main(params):
         model = mobilenet_v3_small(embedding_dim=512)
     elif params.network == "mobilenetv3_large":
         model = mobilenet_v3_large(embedding_dim=512)
+    elif params.network == "resnet18":
+        model = resnet18(embedding_dim=512)
     else:
         raise ValueError("Unsupported network!")
 

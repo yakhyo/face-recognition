@@ -80,3 +80,53 @@ class AngleLinear(nn.Module):
 
     def __repr__(self):
         return f'{self.__class__.__name__}(in_features={self.in_features}, out_features={self.out_features}, m={self.m})'
+
+
+class ArcFace(nn.Module):
+    """Reference: <ArcFace: Additive Angular Margin Loss for Deep Face Recognition>"""
+
+    def __init__(self, in_features, out_features, s=64.0, m=0.5):
+        super(ArcFace, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.s = s
+        self.m = m
+
+        self.weight = nn.Parameter(torch.FloatTensor(out_features, in_features))
+        nn.init.xavier_uniform_(self.weight)
+
+        # Pre-calculated values for margin and threshold
+        self.cos_m = math.cos(m)
+        self.sin_m = math.sin(m)
+        self.th = math.cos(math.pi - m)
+        self.mm = math.sin(math.pi - m) * m
+
+    def forward(self, embeddings, label):
+        # --------------------------- cos(theta) & phi(theta) ---------------------------
+        # Normalize features and weights
+        cosine = F.linear(F.normalize(embeddings), F.normalize(self.weight))
+
+        # Calculate sine and phi (cos(theta + m))
+        sine = torch.sqrt((1.0 - torch.pow(cosine, 2)).clamp(0, 1))
+        phi = cosine * self.cos_m - sine * self.sin_m
+
+        # --------------------------- Prepare one-hot mask ---------------------------
+        one_hot = torch.zeros_like(cosine)
+        one_hot.scatter_(1, label.view(-1, 1).long(), 1)
+
+        # --------------------------- Apply margin to target class ---------------------------
+
+        # Hard samples condition: cosine < self.th (i.e., theta + m > pi)
+        # For hard samples, use cos(theta) - mm instead of phi
+        final_phi = torch.where(cosine > self.th, phi, cosine - self.mm)
+
+        # Apply final_phi only to the target class, keep cosine for non-target classes
+        output = (one_hot * final_phi) + ((1.0 - one_hot) * cosine)
+
+        # Scale the output
+        output *= self.s
+
+        return output
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(in_features={self.in_features}, out_features={self.out_features}, s={self.s}, m={self.m})"
