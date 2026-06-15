@@ -98,7 +98,7 @@ class ArcFace(nn.Module):
     def forward(self, embeddings, label):
         # --------------------------- cos(theta) & phi(theta) ---------------------------
         # Normalize features and weights to calculate cosine of angle (cos(theta))
-        cosine = F.linear(embeddings, F.normalize(self.weight))
+        cosine = F.linear(F.normalize(embeddings), F.normalize(self.weight))
 
         # Clip for numerical stability and convert to angle (theta)
         cos_theta = cosine.clamp(-1 + 1e-7, 1 - 1e-7)

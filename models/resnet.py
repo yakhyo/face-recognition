@@ -22,7 +22,7 @@ class ResNetFeatureExtractor(nn.Module):
 
     def forward(self, x):
         x = self.feature_extractor(x)
-        x = F.normalize(x)  # L2 Normalization is applied here
+
         return x
 
 
