@@ -237,6 +237,7 @@ def main(params):
 
     setup_seed()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
 
     if params.use_deterministic_algorithms:
         torch.backends.cudnn.benchmark = False

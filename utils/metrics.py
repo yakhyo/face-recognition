@@ -86,7 +86,7 @@ class ArcFace(nn.Module):
     """Reference: <ArcFace: Additive Angular Margin Loss for Deep Face Recognition>"""
 
     def __init__(self, in_features, out_features, s=64.0, m=0.5):
-        super(ArcFace, self).__init__()
+        super().__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.s = s
