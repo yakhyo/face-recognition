@@ -80,3 +80,44 @@ class AngleLinear(nn.Module):
 
     def __repr__(self):
         return f'{self.__class__.__name__}(in_features={self.in_features}, out_features={self.out_features}, m={self.m})'
+
+
+class ArcFace(nn.Module):
+    """Reference: <ArcFace: Additive Angular Margin Loss for Deep Face Recognition>"""
+
+    def __init__(self, in_features, out_features, s=64.0, m=0.5):
+        super().__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.s = s
+        self.m = m
+
+        self.weight = nn.Parameter(torch.FloatTensor(out_features, in_features))
+        nn.init.xavier_uniform_(self.weight)
+
+    def forward(self, embeddings, label):
+        # --------------------------- cos(theta) & phi(theta) ---------------------------
+        # Normalize features and weights to calculate cosine of angle (cos(theta))
+        cosine = F.linear(F.normalize(embeddings), F.normalize(self.weight))
+
+        # Clip for numerical stability and convert to angle (theta)
+        cos_theta = cosine.clamp(-1 + 1e-7, 1 - 1e-7)
+        theta = torch.acos(cos_theta)
+
+        # Add margin (m) to the angle for the target class
+        # One-hot encoding of target labels and margin tensor M
+        one_hot = F.one_hot(label.long(), num_classes=self.out_features)
+        M = one_hot * self.m
+        theta = theta + M  # Add margin only to target angle
+
+        # Convert back to cosine (cos(theta + m) for target class)
+        # Non-target classes use cos(theta) implicitly
+        output = torch.cos(theta)
+
+        # Scale the output
+        output *= self.s
+
+        return output
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(in_features={self.in_features}, out_features={self.out_features}, s={self.s}, m={self.m})"
