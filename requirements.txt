@@ -5,5 +5,5 @@ tqdm==4.67.1
 torch==2.5.1
 torchaudio==2.5.1
 torchvision==0.20.1
-uniface
+uniface>=4.1.0
 onnxruntime

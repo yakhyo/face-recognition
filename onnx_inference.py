@@ -42,7 +42,7 @@ def compare_faces(
 # Example usage
 if __name__ == "__main__":
 
-    uniface_inference = uniface.RetinaFace(model="retinaface_mnet_v2", conf_thresh=0.45)  # Face detector
+    uniface_inference = uniface.RetinaFace(model_name=uniface.constants.RetinaFaceWeights.MNET_V2, confidence_threshold=0.45)  # Face detector
 
     model_path = "mobilenetv2_mcp.onnx"  # Path to your ONNX model
     face_recognizer = ONNXFaceEngine(model_path)
@@ -52,10 +52,10 @@ if __name__ == "__main__":
     img2 = cv2.imread("assets/b_02.jpg")
 
     detections1 = uniface_inference.detect(img1)  # Detect faces in the image
-    landmarks1 = np.array(detections1[0]['landmarks'], dtype=np.float32)  # Get landmarks for the first face
+    landmarks1 = np.array(detections1[0].landmarks, dtype=np.float32)  # Get landmarks for the first face
 
     detections2 = uniface_inference.detect(img2)  # Detect faces in the image
-    landmarks2 = np.array(detections2[0]['landmarks'], dtype=np.float32)  # Get landmarks for the second face
+    landmarks2 = np.array(detections2[0].landmarks, dtype=np.float32)  # Get landmarks for the second face
 
     # Compare two face images
     similarity, is_same = compare_faces(face_recognizer, img1, landmarks1, img2, landmarks2, threshold=0.30)
